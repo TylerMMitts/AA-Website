@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { useAuth } from 'react-oidc-context';
+import { useState, useEffect } from 'react';
+import { auth } from './components/firebase';
+import { User, onAuthStateChanged } from 'firebase/auth';
+import { FirebaseLogin } from './components/FirebaseLogin';
 import { Navigation } from './components/Navigation';
 import { HomePage } from './components/HomePage';
 import { MyProfile } from './components/MyProfile';
@@ -24,37 +26,52 @@ interface Job {
 }
 
 export default function App() {
-  const auth = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
 
+  useEffect(() => {
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+      if (currentUser) {
+        setShowLogin(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleLogin = () => {
-    auth.signinRedirect();
+    setShowLogin(true);
   };
 
-  const handleLogout = () => {
-    const clientId = "7fl492n78ft5u9g5romvetaj4t";
-    const logoutUri = "https://d84l1y8p4kdic.cloudfront.net";
-    const cognitoDomain = "https://us-east-2htc4w6dxj.auth.us-east-2.amazoncognito.com";
-    
-    // Remove user from local storage first
-    auth.removeUser();
-    
-    // Redirect to Cognito logout
-    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-    
-    setCurrentPage('home');
-  };
-
-  const handleGetStarted = () => {
-    if (auth.isAuthenticated) {
-      setCurrentPage('profile');
-    } else {
-      auth.signinRedirect();
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      setCurrentPage('home');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
-  const handleSearch = (searchParams: any) => {
+  const handleLoginSuccess = () => {
+    setShowLogin(false);
+    setCurrentPage('profile');
+  };
+
+  const handleGetStarted = () => {
+    if (user) {
+      setCurrentPage('profile');
+    } else {
+      setShowLogin(true);
+    }
+  };
+
+  const handleSearch = (_searchParams: any) => {
     setCurrentPage('results');
   };
 
@@ -79,8 +96,7 @@ export default function App() {
     }
   };
 
-  // Handle authentication loading and errors
-  if (auth.isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -91,25 +107,25 @@ export default function App() {
     );
   }
 
-  if (auth.error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Authentication Error: {auth.error.message}</p>
-        </div>
-      </div>
-    );
+  if (showLogin) {
+    return <FirebaseLogin onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation
         currentPage={currentPage}
-        onNavigate={setCurrentPage}
-        isLoggedIn={auth.isAuthenticated}
+        onNavigate={(page) => setCurrentPage(page as Page)}
+        isLoggedIn={!!user}
         onLogin={handleLogin}
         onLogout={handleLogout}
-        user={auth.user}
+        user={user ? {
+          profile: {
+            name: user.displayName || user.email || 'User',
+            email: user.email || '',
+            picture: user.photoURL || undefined
+          }
+        } : undefined}
       />
       <main>
         {renderPage()}

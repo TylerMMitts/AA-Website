@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,9 +6,13 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
-import { Upload, FileText } from 'lucide-react';
+import { Upload, FileText, Download } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+import { auth } from './firebase';
+import { saveUserData } from '../functions/save_user_data';
+import { getUserData } from '../functions/get_user_data';
 
+// Main component for user profile management
 export function MyProfile() {
   const [formData, setFormData] = useState({
     // Personal Information
@@ -60,17 +64,193 @@ export function MyProfile() {
     diversityDisclosure: 'prefer-not-to-say',
   });
 
-  const handleSave = () => {
-    toast.success('Profile saved successfully!');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(null);
+
+  // Loads user profile data when component mounts or user changes
+  useEffect(() => {
+    loadUserProfile();
+  }, [auth.currentUser]);
+
+  const loadUserProfile = async () => {
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      console.log('Loading profile for user:', currentUser.uid);
+      
+      // Uses user_id from firebase to fetch user data
+      const result = await getUserData(currentUser.uid);
+      
+      if (result.success && result.data) {
+        const userData = result.data;
+        console.log('Loaded user data:', userData);
+        
+        // Parses profile_data - handle both string and object formats
+        let profileData = userData.profile_data;
+        if (typeof profileData === 'string') {
+          try {
+            profileData = JSON.parse(profileData);
+          } catch (parseError) {
+            console.error('Error parsing profile_data:', parseError);
+            profileData = {};
+          }
+        }
+        
+        // Store existing resume URL if available
+        if (userData.resume_file_url) {
+          setExistingResumeUrl(userData.resume_file_url);
+          console.log('Existing resume URL:', userData.resume_file_url);
+        }
+        
+        // Updates form with existing data
+        setFormData(prev => ({
+          ...prev,
+          ...profileData,
+          // Note: resumeFile is handled separately since it's a File object
+        }));
+        
+        toast.success('Profile loaded successfully!');
+      } else {
+        console.log('No existing profile data found, starting with empty form');
+        toast.info('No saved profile found. Please fill out your information.');
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      toast.error('Failed to load profile data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // Remove the data:application/pdf;base64, prefix
+        const base64 = (reader.result as string).split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // Handles when the user clicks "Save Profile", saves data to backend
+  const handleSave = async () => {
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      toast.error('You must be logged in to save your profile');
+      return;
+    }
+
+    // Validates required fields
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      toast.error('Please fill in all required fields (First Name, Last Name, Email)');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // Prepare profile data
+      const { resumeFile, ...profileData } = formData;
+
+      let resumeFileBase64 = null;
+      
+      // Convert file to base64 if a new resume is uploaded
+      if (resumeFile) {
+        try {
+          console.log('Converting resume file to base64...');
+          resumeFileBase64 = await fileToBase64(resumeFile);
+          console.log('Resume converted to base64, size:', resumeFileBase64.length);
+        } catch (error) {
+          console.error('Error converting file to base64:', error);
+          toast.error('Failed to process resume file');
+          return;
+        }
+      }
+
+      const result = await saveUserData({
+        user_id: currentUser.uid,
+        profile: profileData,
+        resume_file: resumeFileBase64, // Send as base64 data
+        resume_file_name: resumeFile?.name, // Send file name
+      });
+
+      if (result.success) {
+        // Update existing resume URL if a new one was uploaded
+        if (resumeFile && result.data?.resume_file_url) {
+          setExistingResumeUrl(result.data.resume_file_url);
+        }
+        toast.success('Profile saved successfully!');
+      } else {
+        toast.error(`Failed to save profile: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('An unexpected error occurred while saving your profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = ['.pdf', '.doc', '.docx'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        toast.error('Please upload a PDF, DOC, or DOCX file');
+        return;
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be less than 5MB');
+        return;
+      }
+
       setFormData({ ...formData, resumeFile: file });
       toast.success(`Resume uploaded: ${file.name}`);
     }
   };
+
+  const handleDownloadResume = () => {
+    if (existingResumeUrl) {
+      window.open(existingResumeUrl, '_blank');
+    }
+  };
+
+  const handleRemoveResume = () => {
+    setFormData({ ...formData, resumeFile: null });
+    setExistingResumeUrl(null);
+    toast.info('Resume removed from form');
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading your profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -247,10 +427,44 @@ export function MyProfile() {
           <CardHeader>
             <CardTitle>Resume Upload</CardTitle>
             <CardDescription>
-              Upload your resume - we'll parse it to auto-fill applications
+              Upload your resume - we'll store it securely in AWS S3
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* Existing Resume Display */}
+            {existingResumeUrl && !formData.resumeFile && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="h-8 w-8 text-green-600" />
+                    <div>
+                      <p className="text-green-800 font-medium">Resume already saved</p>
+                      <p className="text-green-600 text-sm">Your resume is securely stored</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadResume}
+                      className="flex items-center space-x-1"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Download</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemoveResume}
+                    >
+                      Replace
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* File Upload Area */}
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
               <input
                 type="file"
@@ -265,16 +479,16 @@ export function MyProfile() {
                     <>
                       <FileText className="h-12 w-12 text-green-600" />
                       <div>
-                        <p className="text-green-600">{formData.resumeFile.name}</p>
-                        <p className="text-gray-500 mt-1">Click to upload a different file</p>
+                        <p className="text-green-600 font-medium">{formData.resumeFile.name}</p>
+                        <p className="text-gray-500 mt-1">Ready to upload - click to change</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <Upload className="h-12 w-12 text-gray-400" />
                       <div>
-                        <p className="text-gray-700">
-                          Drop your resume here or click to browse
+                        <p className="text-gray-700 font-medium">
+                          {existingResumeUrl ? 'Upload new resume' : 'Upload your resume'}
                         </p>
                         <p className="text-gray-500 mt-1">PDF, DOC, or DOCX (Max 5MB)</p>
                       </div>
@@ -283,6 +497,22 @@ export function MyProfile() {
                 </div>
               </label>
             </div>
+
+            {/* Uploaded file actions */}
+            {formData.resumeFile && (
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFormData({ ...formData, resumeFile: null })}
+                >
+                  Cancel
+                </Button>
+                <p className="text-sm text-gray-500 flex items-center">
+                  File will be uploaded when you save your profile
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -602,8 +832,9 @@ export function MyProfile() {
             onClick={handleSave}
             size="lg"
             className="bg-blue-600 hover:bg-blue-700"
+            disabled={isSaving}
           >
-            Save Changes
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>
