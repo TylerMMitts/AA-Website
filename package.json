@@ -64,6 +64,7 @@
             "dev": "vite",
             "predeploy": "npm run build",
             "deploy": "gh-pages -d build",
-            "build": "chmod +x node_modules/.bin/vite && vite build"
+            "build": "chmod +x node_modules/.bin/vite && vite build",
+            "vercel-build": "npm install --legacy-peer-deps && npm run build"
       }
 }
