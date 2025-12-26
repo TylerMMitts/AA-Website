@@ -34,6 +34,8 @@
             "clsx": "*",
             "cmdk": "^1.1.1",
             "embla-carousel-react": "^8.6.0",
+            "firebase": "^12.5.0",
+            "firebaseui": "^6.1.0",
             "input-otp": "^1.4.2",
             "lucide-react": "^0.487.0",
             "next-themes": "^0.4.6",
@@ -60,8 +62,8 @@
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build",
             "predeploy": "npm run build",
-            "deploy": "gh-pages -d build"
+            "deploy": "gh-pages -d build",
+            "build": "chmod +x node_modules/.bin/vite && vite build"
       }
 }
