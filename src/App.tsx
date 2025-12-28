@@ -10,6 +10,8 @@ import { JobSearch } from './components/JobSearch';
 import { JobResults } from './components/JobResults';
 import { Analytics } from './components/Analytics';
 import { Toaster } from './components/ui/sonner';
+import { getUserData } from './functions/get_user_data';
+import { UserCache } from './utils/userCache';
 
 type Page = 'home' | 'demo' | 'profile' | 'search' | 'results' | 'analytics';
 
@@ -37,16 +39,49 @@ export default function App() {
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      
       if (currentUser) {
+        // Fetch user data when logged in and cache it
+        try {
+          const response = await getUserData(currentUser.uid);
+          if (response.success && response.data) {
+            // Cache profile data
+            if (response.data.profile_data) {
+              const profileData = typeof response.data.profile_data === 'string'
+                ? JSON.parse(response.data.profile_data)
+                : response.data.profile_data;
+              
+              UserCache.set(currentUser.uid, 'profile', {
+                formData: profileData,
+                resumeUrl: response.data.resume_file_url
+              });
+            }
+            
+            // Cache applications data
+            const applicationsData = response.data.applications_txt || response.data.applications;
+            if (applicationsData) {
+              const applications = typeof applicationsData === 'string'
+                ? JSON.parse(applicationsData)
+                : applicationsData;
+              
+              UserCache.set(currentUser.uid, 'applications', applications);
+              setJobs(applications); // Set jobs state for immediate use
+            }
+          }
+        } catch (error) {
+          console.error('Error loading user data on login:', error);
+        }
+        
         setShowLogin(false);
         // Auto-redirect logged-in users to dashboard if on home page
         if (currentPage === 'home') {
           setCurrentPage('results');
         }
       }
+      
+      setLoading(false);
     });
 
     return () => unsubscribe();
