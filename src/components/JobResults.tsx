@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { saveUserData } from '../functions/save_user_data';
 import { getUserData } from '../functions/get_user_data';
 import { UserCache } from '../utils/userCache';
@@ -57,6 +57,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
   const [searchKeywords, setSearchKeywords] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   // Load applications from database on mount
   useEffect(() => {
@@ -71,6 +72,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
       if (cachedJobs) {
         setJobs(cachedJobs);
         setIsLoading(false);
+        hasLoadedRef.current = true;
         return;
       }
 
@@ -88,6 +90,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
         console.error('Error loading applications:', error);
       } finally {
         setIsLoading(false);
+        hasLoadedRef.current = true;
       }
     };
 
@@ -97,7 +100,8 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
   // Save applications to database whenever jobs change
   useEffect(() => {
     const saveApplications = async () => {
-      if (!user?.uid || isLoading || isSaving) return;
+      // Skip save if not loaded yet, or if loading, or already saving
+      if (!hasLoadedRef.current || !user?.uid || isLoading || isSaving) return;
 
       setIsSaving(true);
       try {
