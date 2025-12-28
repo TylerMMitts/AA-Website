@@ -1,13 +1,13 @@
-import { useState } from 'react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, BarChart3 } from 'lucide-react';
 
 interface NavigationProps {
   currentPage: string;
@@ -15,13 +15,11 @@ interface NavigationProps {
   isLoggedIn: boolean;
   onLogin: () => void;
   onLogout: () => void;
-  user?: any; // Cognito user object
+  user?: any;
 }
 
 export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLogout, user }: NavigationProps) {
-  // Get user initials for avatar
   const getUserInitials = () => {
-    // Try multiple possible name attributes
     const name = user?.profile?.name || user?.profile?.given_name || user?.profile?.preferred_username;
     if (name) {
       const names = name.split(' ');
@@ -34,7 +32,6 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLog
   };
 
   const getUserName = () => {
-    // Try different name attributes Cognito might provide
     const name = user?.profile?.name || user?.profile?.given_name;
     const familyName = user?.profile?.family_name;
     
@@ -46,93 +43,173 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLog
     }
     return user?.profile?.preferred_username || user?.profile?.email || 'User';
   };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-8">
-          <button 
+    <header className="sticky top-0 z-50 w-full backdrop-blur-lg border-b" 
+            style={{ 
+              backgroundColor: 'rgba(255, 248, 240, 0.9)', 
+              borderBottomColor: '#51355A',
+              borderBottomWidth: '1px'
+            }}>
+      <div className="container mx-auto px-4">
+        <div className="flex h-20 items-center justify-between">
+          {/* Logo */}
+          <button
             onClick={() => onNavigate('home')}
-            className="flex items-center gap-2 transition-opacity hover:opacity-80"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-              <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-xl text-white"
+                 style={{ backgroundColor: '#9E2B25' }}>
+              AA
             </div>
-            <span className="text-gray-900">AutomateApply</span>
+            <span className="text-2xl font-bold tracking-tight" style={{ color: '#2A0C4E' }}>
+              ApplyApply
+            </span>
           </button>
-          
+
+          {/* Centered Navigation Links for logged in users */}
           {isLoggedIn && (
-            <nav className="hidden md:flex items-center gap-6">
-              <button
-                onClick={() => onNavigate('home')}
-                className={`transition-colors ${
-                  currentPage === 'home' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
-                }`}
+            <nav
+              className="absolute left-1/2 top-0 transform -translate-x-1/2 h-20 flex items-center z-40"
+              aria-label="Main navigation"
+            >
+              <div
+                className="flex justify-between items-center px-20 py-3 rounded-full shadow-lg border border-[#E5E0F0] mx-auto w-full transitio n-all duration-300"
+                style={{ minHeight: 60, backgroundColor: '#51355a', width: '24em' }}
               >
-                Home
-              </button>
-              <button
-                onClick={() => onNavigate('profile')}
-                className={`transition-colors ${
-                  currentPage === 'profile' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                My Profile
-              </button>
-              <button
-                onClick={() => onNavigate('search')}
-                className={`transition-colors ${
-                  currentPage === 'search' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Job Search
-              </button>
-              <button
-                onClick={() => onNavigate('analytics')}
-                className={`transition-colors ${
-                  currentPage === 'analytics' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Analytics
-              </button>
+                <button
+                  onClick={() => onNavigate('results')}
+                  className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
+                    currentPage === 'results'
+                      ? '!bg-[#51355A] !text-white !shadow-xl'
+                      : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
+                  }`}
+                  style={{ letterSpacing: 2 }}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => onNavigate('analytics')}
+                  className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
+                    currentPage === 'analytics'
+                      ? '!bg-[#51355A] !text-white !shadow-xl'
+                      : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
+                  }`}
+                  style={{ letterSpacing: 2 }}
+                >
+                  Analytics
+                </button>
+                <button
+                  onClick={() => onNavigate('profile')}
+                  className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
+                    currentPage === 'profile'
+                      ? '!bg-[#51355A] !text-white !shadow-xl'
+                      : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
+                  }`}
+                  style={{ letterSpacing: 2 }}
+                >
+                  Profile
+                </button>
+              </div>
             </nav>
           )}
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {!isLoggedIn ? (
-            <>
-              <Button variant="ghost" onClick={onLogin}>
-                Log In
-              </Button>
-              <Button onClick={onLogin} className="bg-blue-600 hover:bg-blue-700">
-                Sign Up
-              </Button>
-            </>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full transition-opacity hover:opacity-80">
-                  <Avatar>
-                    <AvatarImage src={user?.profile?.picture || ""} />
-                    <AvatarFallback className="bg-blue-600 text-white">{getUserInitials()}</AvatarFallback>
-                  </Avatar>
+
+          {/* User Menu or Auth Buttons */}
+          <div className="flex items-center gap-6">
+            {isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <Avatar className="h-10 w-10 border-2" style={{ borderColor: '#51355A' }}>
+                      <AvatarImage src={user?.profile?.picture} alt={getUserName()} />
+                      <AvatarFallback style={{ backgroundColor: '#51355A', color: 'white' }}>
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium hidden lg:block" style={{ color: '#51355A' }}>
+                      {getUserName()}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl border-2 p-2" 
+                                     style={{ borderColor: '#51355A', backgroundColor: '#FFF8F0' }}>
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-medium" style={{ color: '#2A0C4E' }}>{getUserName()}</p>
+                    <p className="text-xs" style={{ color: '#51355A', opacity: 0.7 }}>
+                      {user?.profile?.email}
+                    </p>
+                  </div>
+                  <DropdownMenuSeparator style={{ backgroundColor: '#51355A', opacity: 0.2 }} />
+                  {/* Mobile Navigation Links (visible on mobile only) */}
+                  <div className="md:hidden">
+                    <DropdownMenuItem 
+                      onClick={() => onNavigate('results')}
+                      className="rounded-lg cursor-pointer hover:bg-white"
+                      style={{ color: '#51355A' }}
+                    >
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => onNavigate('analytics')}
+                      className="rounded-lg cursor-pointer hover:bg-white"
+                      style={{ color: '#51355A' }}
+                    >
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Analytics
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => onNavigate('profile')}
+                      className="rounded-lg cursor-pointer hover:bg-white"
+                      style={{ color: '#51355A' }}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator style={{ backgroundColor: '#51355A', opacity: 0.2 }} />
+                  </div>
+                  <DropdownMenuItem 
+                    onClick={onLogout}
+                    className="rounded-lg cursor-pointer hover:bg-red-50"
+                    style={{ color: '#9E2B25' }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                {/* Public Navigation Links */}
+                <button
+                  onClick={() => onNavigate('demo')}
+                  className="text-base font-medium hover:opacity-70 transition-opacity hidden sm:block"
+                  style={{ color: '#51355A' }}
+                >
+                  Demo
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5 text-sm font-semibold">{getUserName()}</div>
-                <DropdownMenuItem onClick={() => onNavigate('analytics')}>
-                  <User className="mr-2 h-4 w-4" />
-                  Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+
+                {/* Auth Buttons */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={onLogin}
+                    variant="ghost"
+                    className="font-semibold hover:bg-white/50 rounded-xl"
+                    style={{ color: '#51355A' }}
+                  >
+                    Log In
+                  </Button>
+                  <Button
+                    onClick={onLogin}
+                    className="font-semibold rounded-xl shadow-md hover:shadow-lg transition-shadow text-white"
+                    style={{ backgroundColor: '#9E2B25' }}
+                  >
+                    Sign Up
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

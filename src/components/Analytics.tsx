@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -15,65 +15,27 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+
 interface Job {
   id: string;
   title: string;
   company: string;
   location: string;
-  dateApplied: string;
-  status: 'applied' | 'interview' | 'offer' | 'rejected';
+  remote: string;
+  salary: string;
+  postedDate: string;
+  description: string;
+  type: string;
+  level: string;
+  url?: string;
+  status: 'applied' | 'interviewing' | 'offer' | 'rejected';
 }
 
-const mockAppliedJobs: Job[] = [
-  {
-    id: '1',
-    title: 'Senior Software Engineer',
-    company: 'TechCorp Inc.',
-    location: 'San Francisco, CA',
-    dateApplied: '2025-11-01',
-    status: 'interview',
-  },
-  {
-    id: '2',
-    title: 'Product Manager',
-    company: 'InnovateLabs',
-    location: 'New York, NY',
-    dateApplied: '2025-11-02',
-    status: 'applied',
-  },
-  {
-    id: '3',
-    title: 'Full Stack Developer',
-    company: 'StartupXYZ',
-    location: 'Austin, TX',
-    dateApplied: '2025-10-28',
-    status: 'offer',
-  },
-  {
-    id: '4',
-    title: 'Frontend Engineer',
-    company: 'DesignFirst Co.',
-    location: 'Seattle, WA',
-    dateApplied: '2025-10-25',
-    status: 'rejected',
-  },
-  {
-    id: '5',
-    title: 'DevOps Engineer',
-    company: 'CloudSystems',
-    location: 'Boston, MA',
-    dateApplied: '2025-10-30',
-    status: 'interview',
-  },
-  {
-    id: '6',
-    title: 'Data Scientist',
-    company: 'Analytics Pro',
-    location: 'Chicago, IL',
-    dateApplied: '2025-10-29',
-    status: 'applied',
-  },
-];
+
+interface AnalyticsProps {
+  jobs: Job[];
+  setJobs: Dispatch<SetStateAction<Job[]>>;
+}
 
 const chartData = [
   { date: 'Oct 25', applications: 5 },
@@ -90,12 +52,12 @@ const chartData = [
   { date: 'Nov 5', applications: 52 },
 ];
 
-export function Analytics() {
-  const [jobs, setJobs] = useState(mockAppliedJobs);
+
+export function Analytics({ jobs, setJobs }: AnalyticsProps) {
 
   const metrics = {
     applied: jobs.filter(j => j.status === 'applied').length,
-    interview: jobs.filter(j => j.status === 'interview').length,
+    interview: jobs.filter(j => j.status === 'interviewing').length,
     offer: jobs.filter(j => j.status === 'offer').length,
     rejected: jobs.filter(j => j.status === 'rejected').length,
   };
@@ -110,7 +72,7 @@ export function Analytics() {
     switch (status) {
       case 'applied':
         return 'bg-blue-100 text-blue-700';
-      case 'interview':
+      case 'interviewing':
         return 'bg-purple-100 text-purple-700';
       case 'offer':
         return 'bg-green-100 text-green-700';
@@ -215,9 +177,9 @@ export function Analytics() {
               <Line 
                 type="monotone" 
                 dataKey="applications" 
-                stroke="#2563eb" 
+                stroke="#51355a" 
                 strokeWidth={2}
-                dot={{ fill: '#2563eb', r: 4 }}
+                dot={{ fill: '#51355a', r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -235,7 +197,7 @@ export function Analytics() {
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="all">All ({jobs.length})</TabsTrigger>
               <TabsTrigger value="applied">Applied ({metrics.applied})</TabsTrigger>
-              <TabsTrigger value="interview">Interview ({metrics.interview})</TabsTrigger>
+              <TabsTrigger value="interviewing">Interview ({metrics.interview})</TabsTrigger>
               <TabsTrigger value="offer">Offer ({metrics.offer})</TabsTrigger>
               <TabsTrigger value="rejected">Rejected ({metrics.rejected})</TabsTrigger>
             </TabsList>
@@ -265,8 +227,8 @@ export function Analytics() {
               )}
             </TabsContent>
 
-            <TabsContent value="interview" className="space-y-4 mt-6">
-              {getJobsByStatus('interview').map((job) => (
+            <TabsContent value="interviewing" className="space-y-4 mt-6">
+              {getJobsByStatus('interviewing').map((job) => (
                 <JobCard 
                   key={job.id} 
                   job={job} 
@@ -274,7 +236,7 @@ export function Analytics() {
                   getStatusColor={getStatusColor}
                 />
               ))}
-              {getJobsByStatus('interview').length === 0 && (
+              {getJobsByStatus('interviewing').length === 0 && (
                 <p className="text-center text-gray-500 py-8">No applications in this status</p>
               )}
             </TabsContent>
@@ -362,7 +324,7 @@ function JobCard({ job, onStatusChange, getStatusColor }: JobCardProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="applied">Applied</SelectItem>
-              <SelectItem value="interview">Interview</SelectItem>
+              <SelectItem value="interviewing">Interview</SelectItem>
               <SelectItem value="offer">Offer</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>

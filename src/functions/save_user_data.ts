@@ -1,9 +1,24 @@
+interface SaveUserDataParams {
+  user_id: string;
+  profile?: any;  // Make profile optional
+  resume_file?: string;
+  resume_file_name?: string;
+  applications_txt?: string;
+}
+
+interface SaveUserDataResponse {
+  success: boolean;
+  statusCode: number;
+  data?: any;
+  error?: string;
+}
+
 const LAMBDA_URL = import.meta.env.VITE_SAVE_DATA_URL;
 
 export async function saveUserData(
   params: SaveUserDataParams
 ): Promise<SaveUserDataResponse> {
-  const { user_id, profile, resume_file, resume_file_name } = params;
+  const { user_id, profile, resume_file, resume_file_name, applications_txt } = params;
 
   // Debug logs
   // console.log('=== FRONTEND DEBUG ===');
@@ -22,12 +37,23 @@ export async function saveUserData(
   }
 
   // Creates requestBody object, which will be sent in the body of the POST request
-  const requestBody = {
+  const requestBody: any = {
     user_id: user_id,
-    profile_data: profile, 
-    resume_file_url: resume_file,
-    resume_file_name: resume_file_name
   };
+  
+  // Only include fields that are provided (not undefined)
+  if (profile !== undefined) {
+    requestBody.profile_data = profile;
+  }
+  if (resume_file !== undefined) {
+    requestBody.resume_file_url = resume_file;
+  }
+  if (resume_file_name !== undefined) {
+    requestBody.resume_file_name = resume_file_name;
+  }
+  if (applications_txt !== undefined) {
+    requestBody.applications_txt = applications_txt;
+  }
 
   console.log('Request body:', requestBody);
   console.log('Stringified body:', JSON.stringify(requestBody));

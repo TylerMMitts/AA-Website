@@ -4,13 +4,14 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseLogin } from './components/FirebaseLogin';
 import { Navigation } from './components/Navigation';
 import { HomePage } from './components/HomePage';
+import { DemoPage } from './components/DemoPage';
 import { MyProfile } from './components/MyProfile';
 import { JobSearch } from './components/JobSearch';
 import { JobResults } from './components/JobResults';
 import { Analytics } from './components/Analytics';
 import { Toaster } from './components/ui/sonner';
 
-type Page = 'home' | 'profile' | 'search' | 'results' | 'analytics';
+type Page = 'home' | 'demo' | 'profile' | 'search' | 'results' | 'analytics';
 
 interface Job {
   id: string;
@@ -23,6 +24,8 @@ interface Job {
   description: string;
   type: string;
   level: string;
+  url?: string;
+  status: 'applied' | 'interviewing' | 'offer' | 'rejected';
 }
 
 export default function App() {
@@ -30,7 +33,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
-  const [appliedJobs, setAppliedJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
   useEffect(() => {
     // Listen for auth state changes
@@ -39,11 +42,15 @@ export default function App() {
       setLoading(false);
       if (currentUser) {
         setShowLogin(false);
+        // Auto-redirect logged-in users to dashboard if on home page
+        if (currentPage === 'home') {
+          setCurrentPage('results');
+        }
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentPage]);
 
   const handleLogin = () => {
     setShowLogin(true);
@@ -60,12 +67,12 @@ export default function App() {
 
   const handleLoginSuccess = () => {
     setShowLogin(false);
-    setCurrentPage('profile');
+    setCurrentPage('results'); // Redirect to dashboard after login
   };
 
   const handleGetStarted = () => {
     if (user) {
-      setCurrentPage('profile');
+      setCurrentPage('results'); // Logged-in users go to dashboard
     } else {
       setShowLogin(true);
     }
@@ -76,23 +83,25 @@ export default function App() {
   };
 
   const handleJobApplied = (job: Job) => {
-    setAppliedJobs([...appliedJobs, job]);
+    setJobs(prev => [...prev, job]);
   };
 
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage onGetStarted={handleGetStarted} />;
+        return <HomePage onGetStarted={handleGetStarted} onNavigate={setCurrentPage} />;
+      case 'demo':
+        return <DemoPage onGetStarted={handleGetStarted} />;
       case 'profile':
         return <MyProfile />;
       case 'search':
         return <JobSearch onSearch={handleSearch} />;
       case 'results':
-        return <JobResults onJobApplied={handleJobApplied} />;
+        return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} />;
       case 'analytics':
-        return <Analytics />;
+        return <Analytics jobs={jobs} setJobs={setJobs} />;
       default:
-        return <HomePage onGetStarted={handleGetStarted} />;
+        return <HomePage onGetStarted={handleGetStarted} onNavigate={setCurrentPage} />;
     }
   };
 
@@ -112,7 +121,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
       <Navigation
         currentPage={currentPage}
         onNavigate={(page) => setCurrentPage(page as Page)}

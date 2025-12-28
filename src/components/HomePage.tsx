@@ -1,163 +1,152 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { CheckCircle2, Upload, Zap, Chrome, Target, BarChart3, Star, Users, TrendingUp, Clock } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { CheckCircle2, Chrome, Zap, Target, TrendingUp, Sparkles, Award, Shield } from 'lucide-react';
 
 interface HomePageProps {
   onGetStarted: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function HomePage({ onGetStarted }: HomePageProps) {
+export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
   return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-blue-50 to-white py-20 md:py-32">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-12 lg:grid-cols-2 items-center">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-4 py-2 border border-orange-200">
-                <Zap className="h-4 w-4 text-orange-600" />
-                <span className="text-orange-700">Save 20+ hours every week</span>
+    <div className="w-full" style={{ backgroundColor: '#FFF8F0' }}>
+      {/* Hero Section with Organic Wavy Background */}
+      <section className="relative overflow-hidden py-24 md:py-32" style={{ backgroundColor: '#FFF8F0' }}>
+        {/* Organic Wavy Background Shapes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 1440 800" preserveAspectRatio="none">
+            <path 
+              d="M0,320 C320,380 420,220 720,280 C1020,340 1120,180 1440,240 L1440,0 L0,0 Z" 
+              fill="#51355A" 
+              fillOpacity="0.05"
+              className="animate-wave"
+            />
+            <path 
+              d="M0,480 C360,420 540,540 840,480 C1140,420 1320,540 1440,480 L1440,800 L0,800 Z" 
+              fill="#9E2B25" 
+              fillOpacity="0.03"
+            />
+          </svg>
+          
+          {/* Floating Accent Circles */}
+          <div className="absolute top-20 right-20 w-64 h-64 rounded-full" 
+               style={{ background: 'radial-gradient(circle, rgba(158,43,37,0.1) 0%, transparent 70%)' }}></div>
+          <div className="absolute bottom-40 left-10 w-96 h-96 rounded-full" 
+               style={{ background: 'radial-gradient(circle, rgba(81,53,90,0.08) 0%, transparent 70%)' }}></div>
+        </div>
+
+        {/* Hero Title at the very top */}
+        <div className="w-full flex justify-center z-20 relative pt-8">
+          <h2 className="text-3xl md:text-4xl font-medium mt-0 mb-4" style={{ color: '#2A0C4E', fontStyle: 'italic', fontFamily: 'Inter', fontSize: '2.5em' }}>
+            Make applying for jobs{' '}
+            <span style={{ fontFamily: 'Great Vibes, cursive', fontStyle: 'italic', color: '#9E2B25', fontSize: '2.5em' }}>
+              effortless
+            </span>
+          </h2>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid gap-12 lg:grid-cols-2 items-center max-w-7xl mx-auto">
+            {/* Left: Hero Content */}
+            <div className="space-y-8">
+              <style>
+                {`@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');`}
+              </style>
+              <div className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 border-2" 
+                   style={{ backgroundColor: '#FFF8F0', borderColor: '#9E2B25', color: '#9E2B25' }}>
+                <Sparkles className="h-4 w-4" />
+                <span className="font-semibold text-sm">Automate your job search today</span>
               </div>
               
-              <h1 className="text-gray-900">
-                Stop Searching, Start Succeeding. <span className="text-blue-600">Let AI Apply for You.</span>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl leading-tight" style={{ color: '#2A0C4E' }}>
+                Land your dream job <span style={{ color: '#9E2B25' }}>faster.</span>
               </h1>
               
-              <p className="text-gray-600 text-lg">
-                AutomateApply finds and applies to relevant jobs <span className="text-gray-900">24/7</span>, 
-                so you can focus on preparing for interviews instead of filling out endless applications.
+              <p className="text-xl md:text-2xl leading-relaxed" style={{ color: '#51355A' }}>
+                ApplyApply automates job applications so you can focus on what matters—preparing for interviews.
               </p>
-
-              {/* Time saving highlight */}
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border border-green-100">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 flex-shrink-0">
-                    <Clock className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-gray-900 mb-1">Average job application takes 45 minutes</p>
-                    <p className="text-gray-600">Our AI does it in seconds. Apply to 100+ jobs while you sleep.</p>
-                  </div>
-                </div>
-              </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   onClick={onGetStarted}
-                  size="lg" 
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  size="lg"
+                  className="text-lg px-8 py-6 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                  style={{ backgroundColor: '#9E2B25', color: '#FFF8F0' }}
                 >
-                  Get Started - It's Free
+                  Get Started Free
                 </Button>
-                <Button size="lg" variant="outline">
-                  Watch the Demo
+                <Button 
+                  onClick={() => onNavigate('demo')}
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 py-6 rounded-2xl font-semibold border-2"
+                  style={{ borderColor: '#51355A', color: '#51355A' }}
+                >
+                  Watch Demo
                 </Button>
               </div>
 
-              {/* Subtle social proof */}
-              <p className="text-gray-600 flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                <span>Trusted by <span className="text-gray-900">50,000+ job seekers</span></span>
-              </p>
+              {/* Extension CTA */}
+              <div className="flex items-center gap-3 pt-4">
+                <Chrome className="h-6 w-6" style={{ color: '#51355A' }} />
+                <a 
+                  href="#extension" 
+                  className="text-lg font-medium hover:underline"
+                  style={{ color: '#51355A' }}
+                >
+                  Install Chrome Extension →
+                </a>
+              </div>
             </div>
-            
-            <div className="relative">
-              <div className="relative rounded-lg shadow-2xl overflow-hidden">
-                <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1748609160056-7b95f30041f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBkYXNoYm9hcmQlMjBhbmFseXRpY3N8ZW58MXx8fHwxNzYyMzM2ODY5fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Job search dashboard"
-                  className="w-full"
-                />
-                {/* Subtle accent overlay */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/5 to-transparent pointer-events-none"></div>
-              </div>
 
-              {/* Single floating stat - time saved */}
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 rounded-lg bg-white p-4 shadow-xl border border-gray-100 hidden lg:block">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600">
-                    <CheckCircle2 className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Time Saved This Month</p>
-                    <p className="text-gray-900">32 hours</p>
+            {/* Right: Visual Mockup */}
+            <div className="relative">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4" style={{ borderColor: '#51355A' }}>
+                <div className="bg-white p-8 aspect-[4/3]">
+                  {/* Dashboard Mockup */}
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="h-8 w-32 rounded-lg" style={{ backgroundColor: '#51355A' }}></div>
+                      <div className="h-8 w-8 rounded-full" style={{ backgroundColor: '#9E2B25' }}></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="rounded-xl p-4 space-y-2" style={{ backgroundColor: '#FFF8F0' }}>
+                          <div className="h-10 w-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#9E2B25' : '#51355A' }}></div>
+                          <div className="h-3 w-16 rounded" style={{ backgroundColor: '#51355A', opacity: 0.3 }}></div>
+                          <div className="h-5 w-12 rounded" style={{ backgroundColor: '#51355A' }}></div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="rounded-xl p-4 flex items-center gap-4" style={{ backgroundColor: '#FFF8F0' }}>
+                          <div className="h-12 w-12 rounded-lg" style={{ backgroundColor: '#51355A', opacity: 0.7 }}></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-3 rounded" style={{ backgroundColor: '#51355A', opacity: 0.4, width: '70%' }}></div>
+                            <div className="h-2 rounded" style={{ backgroundColor: '#51355A', opacity: 0.2, width: '50%' }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-gray-900 mb-4">How It Works</h2>
-            <p className="text-gray-600 text-lg">Three simple steps to automate your job search</p>
-          </div>
-          
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="text-center space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                <Upload className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-gray-900">Set Your Profile</h3>
-              <p className="text-gray-600">
-                Tell us your experience and upload your resume. We'll handle the rest.
-              </p>
-            </div>
-            
-            <div className="text-center space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                <Chrome className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-gray-900">Install & Activate</h3>
-              <p className="text-gray-600">
-                Add our Chrome extension with one click. Takes less than 30 seconds.
-              </p>
-            </div>
-            
-            <div className="text-center space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                <Zap className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-gray-900">Apply Automatically</h3>
-              <p className="text-gray-600">
-                Watch as we find and apply to jobs that match your criteria 24/7.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Chrome Extension Spotlight */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <div className="space-y-4">
-              <h2 className="text-gray-900">Install the Extension in 30 Seconds</h2>
-              <p className="text-gray-600 text-lg">
-                Our powerful Chrome extension works seamlessly in the background while you focus on what matters.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1662027067763-770376e710f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaHJvbWUlMjBleHRlbnNpb24lMjBicm93c2VyfGVufDF8fHx8MTc2MjM1Mzk5M3ww&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Chrome extension"
-                className="rounded-lg w-full"
-              />
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                  <Chrome className="mr-2 h-5 w-5" />
-                  Add to Chrome
-                </Button>
-                <Button size="lg" variant="outline">
-                  Learn More
-                </Button>
+              
+              {/* Floating Badge */}
+              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-5 shadow-2xl border-2 animate-float hidden lg:block" 
+                   style={{ borderColor: '#9E2B25' }}>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#9E2B25' }}>
+                    <CheckCircle2 className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: '#51355A' }}>Applications This Week</p>
+                    <p className="text-2xl font-bold" style={{ color: '#9E2B25' }}>47</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -165,125 +154,129 @@ export function HomePage({ onGetStarted }: HomePageProps) {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-white">
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-gray-900 mb-4">Choose Your Plan</h2>
-            <p className="text-gray-600 text-lg">Start free and upgrade as you grow</p>
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-bold" style={{ color: '#2A0C4E' }}>
+              Choose Your Plan
+            </h2>
+            <p className="text-xl" style={{ color: '#51355A' }}>
+              Start free. Upgrade when you're ready.
+            </p>
           </div>
           
-          <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+          <div className="grid gap-8 md:grid-cols-2 max-w-5xl mx-auto">
             {/* Free Plan */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Free</CardTitle>
-                <CardDescription>Perfect for getting started</CardDescription>
-                <div className="mt-4">
-                  <span className="text-gray-900">$0</span>
-                  <span className="text-gray-600">/month</span>
+            <Card className="rounded-3xl border-2 overflow-hidden hover:shadow-xl transition-shadow" style={{ borderColor: '#51355A' }}>
+              <CardHeader className="space-y-4 pb-8" style={{ backgroundColor: '#FFF8F0' }}>
+                <div className="space-y-2">
+                  <CardTitle className="text-3xl" style={{ color: '#51355A' }}>Free</CardTitle>
+                  <CardDescription className="text-base" style={{ color: '#51355A', opacity: 0.7 }}>
+                    Perfect for getting started
+                  </CardDescription>
+                </div>
+                <div>
+                  <span className="text-5xl font-bold" style={{ color: '#2A0C4E' }}>$0</span>
+                  <span className="text-xl ml-2" style={{ color: '#51355A' }}>/month</span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Up to 10 applications/month</span>
+              <CardContent className="space-y-4 pt-8 pb-8">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Basic application management</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Basic job search filters</span>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Chrome extension with basic automation</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Email support</span>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Manual job entry</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Application tracking</span>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={onGetStarted} variant="outline" className="w-full">
-                  Choose Plan
+              <CardFooter className="pt-0 pb-8">
+                <Button 
+                  onClick={onGetStarted}
+                  className="w-full text-lg py-6 rounded-xl font-semibold"
+                  variant="outline"
+                  style={{ borderColor: '#51355A', borderWidth: '2px', color: '#51355A' }}
+                >
+                  Get Started Free
                 </Button>
               </CardFooter>
             </Card>
 
-            {/* Pro Plan */}
-            <Card className="border-blue-600 border-2 relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="bg-blue-600 text-white px-4 py-1 rounded-full">
-                  Recommended
-                </span>
+            {/* Paid Plan */}
+            <Card className="rounded-3xl border-4 overflow-hidden shadow-2xl relative" style={{ borderColor: '#9E2B25' }}>
+              {/* Recommended Badge */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-semibold text-white z-10"
+                   style={{ backgroundColor: '#9E2B25' }}>
+                ⭐ Most Popular
               </div>
-              <CardHeader>
-                <CardTitle>Pro</CardTitle>
-                <CardDescription>For serious job seekers</CardDescription>
-                <div className="mt-4">
-                  <span className="text-gray-900">$29</span>
-                  <span className="text-gray-600">/month</span>
+              
+              <CardHeader className="space-y-4 pb-8" style={{ backgroundColor: '#51355A' }}>
+                <div className="space-y-2">
+                  <CardTitle className="text-3xl text-white">Pro</CardTitle>
+                  <CardDescription className="text-base text-white opacity-90">
+                    Everything you need to succeed
+                  </CardDescription>
+                </div>
+                <div>
+                  <span className="text-5xl font-bold text-white">$29</span>
+                  <span className="text-xl ml-2 text-white opacity-90">/month</span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Unlimited applications</span>
+              <CardContent className="space-y-4 pt-8 pb-8">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Award className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg font-semibold" style={{ color: '#2A0C4E' }}>Everything in Free, PLUS:</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Advanced search filters</span>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <div>
+                      <p className="text-lg font-semibold" style={{ color: '#51355A' }}>Job Search Automation</p>
+                      <p className="text-sm opacity-70" style={{ color: '#51355A' }}>
+                        Automatically find and add relevant jobs to your dashboard
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Analytics dashboard</span>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <div>
+                      <p className="text-lg font-semibold" style={{ color: '#51355A' }}>AI Resume & Cover Letter</p>
+                      <p className="text-sm opacity-70" style={{ color: '#51355A' }}>
+                        Custom-tailored for each application
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Priority support</span>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0-5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Unlimited applications</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Cover letter templates</span>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Priority support</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
+                    <span className="text-lg" style={{ color: '#51355A' }}>Advanced analytics</span>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={onGetStarted} className="w-full bg-blue-600 hover:bg-blue-700">
-                  Choose Plan
-                </Button>
-              </CardFooter>
-            </Card>
-
-            {/* Enterprise Plan */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Enterprise</CardTitle>
-                <CardDescription>For agencies & coaches</CardDescription>
-                <div className="mt-4">
-                  <span className="text-gray-900">Custom</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Everything in Pro</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Multiple user accounts</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">API access</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">Dedicated support</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  Contact Sales
+              <CardFooter className="pt-0 pb-8">
+                <Button 
+                  onClick={onGetStarted}
+                  className="w-full text-lg py-6 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all"
+                  style={{ backgroundColor: '#9E2B25' }}
+                >
+                  Upgrade to Pro
                 </Button>
               </CardFooter>
             </Card>
@@ -291,21 +284,114 @@ export function HomePage({ onGetStarted }: HomePageProps) {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="text-white">Ready to Transform Your Job Search?</h2>
-            <p className="text-blue-100 text-lg">
-              Join thousands of professionals who have automated their job applications and landed their dream jobs faster.
+      {/* How It Works - Simple */}
+      <section className="py-24" style={{ backgroundColor: '#FFF8F0' }}>
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-bold" style={{ color: '#2A0C4E' }}>
+              How ApplyApply Works
+            </h2>
+            <p className="text-xl" style={{ color: '#51355A' }}>
+              Three simple steps to automate your job search
             </p>
-            <Button 
-              onClick={onGetStarted}
-              size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100"
-            >
-              Start Your Free Trial Today
-            </Button>
+          </div>
+          
+          <div className="grid gap-12 md:grid-cols-3 max-w-6xl mx-auto">
+            <div className="text-center space-y-6">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl shadow-lg" 
+                   style={{ backgroundColor: '#51355A' }}>
+                <Target className="h-10 w-10 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold" style={{ color: '#2A0C4E' }}>1. Set Your Profile</h3>
+                <p className="text-lg" style={{ color: '#51355A' }}>
+                  Add your experience, skills, and job preferences. Takes just 5 minutes.
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-center space-y-6">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl shadow-lg" 
+                   style={{ backgroundColor: '#9E2B25' }}>
+                <Chrome className="h-10 w-10 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold" style={{ color: '#2A0C4E' }}>2. Install Extension</h3>
+                <p className="text-lg" style={{ color: '#51355A' }}>
+                  One-click install. Our Chrome extension does the heavy lifting for you.
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-center space-y-6">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl shadow-lg" 
+                   style={{ backgroundColor: '#51355A' }}>
+                <Zap className="h-10 w-10 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold" style={{ color: '#2A0C4E' }}>3. Watch It Work</h3>
+                <p className="text-lg" style={{ color: '#51355A' }}>
+                  Sit back as ApplyApply finds and applies to jobs 24/7.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 relative overflow-hidden" style={{ backgroundColor: '#2A0C4E' }}>
+        {/* Subtle Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{ 
+            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+            backgroundSize: '30px 30px'
+          }}></div>
+        </div>
+
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+              Ready to land your dream job?
+            </h2>
+            <p className="text-xl md:text-2xl" style={{ color: '#FFF8F0', opacity: 0.9 }}>
+              Join thousands who've automated their job search and saved hundreds of hours.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button 
+                onClick={onGetStarted}
+                size="lg"
+                className="text-lg px-10 py-7 rounded-2xl font-semibold shadow-2xl hover:shadow-3xl transition-all text-white"
+                style={{ backgroundColor: '#9E2B25' }}
+              >
+                Start Free Today
+              </Button>
+              <Button 
+                onClick={() => onNavigate('demo')}
+                size="lg"
+                variant="outline"
+                className="text-lg px-10 py-7 rounded-2xl font-semibold border-2 text-white hover:bg-white/10"
+                style={{ borderColor: '#FFF8F0' }}
+              >
+                See How It Works
+              </Button>
+            </div>
+            
+            {/* Trust Signals */}
+            <div className="flex items-center justify-center gap-8 pt-8 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" style={{ color: '#FFF8F0' }} />
+                <span className="text-sm" style={{ color: '#FFF8F0' }}>Secure & Private</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" style={{ color: '#FFF8F0' }} />
+                <span className="text-sm" style={{ color: '#FFF8F0' }}>95% Success Rate</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="h-5 w-5" style={{ color: '#FFF8F0' }} />
+                <span className="text-sm" style={{ color: '#FFF8F0' }}>Rated 4.9/5</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

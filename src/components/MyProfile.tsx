@@ -7,10 +7,11 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
 import { Upload, FileText, Download } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { auth } from './firebase';
 import { saveUserData } from '../functions/save_user_data';
 import { getUserData } from '../functions/get_user_data';
+import { UserCache } from '../utils/userCache';
 
 // Main component for user profile management
 export function MyProfile() {
@@ -85,6 +86,28 @@ export function MyProfile() {
       setIsLoading(true);
       console.log('Loading profile for user:', currentUser.uid);
       
+      // Check cache first
+      const cachedProfile = UserCache.get<any>(currentUser.uid, 'profile');
+      if (cachedProfile && cachedProfile.formData) {
+        // Merge cached data properly, ensuring all fields are set
+        const mergedData = { ...formData };
+        Object.keys(cachedProfile.formData).forEach(key => {
+          const value = cachedProfile.formData[key];
+          if (value !== undefined && value !== null) {
+            mergedData[key] = value;
+          }
+        });
+        setFormData(mergedData);
+        
+        if (cachedProfile.resumeUrl) {
+          setExistingResumeUrl(cachedProfile.resumeUrl);
+        }
+        setIsLoading(false);
+        console.log('Profile loaded from cache:', mergedData);
+        toast.success('Profile loaded from cache!');
+        return;
+      }
+      
       // Uses user_id from firebase to fetch user data
       const result = await getUserData(currentUser.uid);
       
@@ -103,6 +126,9 @@ export function MyProfile() {
           }
         }
         
+        console.log('Parsed profileData:', profileData);
+        console.log('Is profileData empty?', Object.keys(profileData).length === 0);
+        
         // Store existing resume URL if available
         if (userData.resume_file_url) {
           setExistingResumeUrl(userData.resume_file_url);
@@ -116,7 +142,18 @@ export function MyProfile() {
           // Note: resumeFile is handled separately since it's a File object
         }));
         
-        toast.success('Profile loaded successfully!');
+        // Cache the loaded data
+        UserCache.set(currentUser.uid, 'profile', {
+          formData: profileData,
+          resumeUrl: userData.resume_file_url
+        });
+        
+        // Show appropriate message based on whether profile has data
+        if (Object.keys(profileData).length === 0) {
+          toast.info('No saved profile found. Please fill out your information.');
+        } else {
+          toast.success('Profile loaded successfully!');
+        }
       } else {
         console.log('No existing profile data found, starting with empty form');
         toast.info('No saved profile found. Please fill out your information.');
@@ -191,6 +228,13 @@ export function MyProfile() {
         if (resumeFile && result.data?.resume_file_url) {
           setExistingResumeUrl(result.data.resume_file_url);
         }
+        
+        // Update cache
+        UserCache.set(currentUser.uid, 'profile', {
+          formData: profileData,
+          resumeUrl: result.data?.resume_file_url || existingResumeUrl
+        });
+        
         toast.success('Profile saved successfully!');
       } else {
         toast.error(`Failed to save profile: ${result.error}`);
