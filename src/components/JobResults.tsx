@@ -58,6 +58,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const hasLoadedRef = useRef(false);
+  const initialJobsRef = useRef<Job[]>([]);
 
   // Load applications from database on mount
   useEffect(() => {
@@ -71,6 +72,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
       const cachedJobs = UserCache.get<Job[]>(user.uid, 'applications');
       if (cachedJobs) {
         setJobs(cachedJobs);
+        initialJobsRef.current = cachedJobs;
         setIsLoading(false);
         hasLoadedRef.current = true;
         return;
@@ -79,12 +81,20 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
       // Load from database
       try {
         const response = await getUserData(user.uid);
-        if (response.success && response.data?.applications_txt) {
-          const applications = JSON.parse(response.data.applications_txt);
-          setJobs(applications);
+        if (response.success && response.data) {
+          // Check for both field names: applications_txt (sent from frontend) and applications (stored in DB)
+          const applicationsData = response.data.applications_txt || response.data.applications;
           
-          // Update cache
-          UserCache.set(user.uid, 'applications', applications);
+          if (applicationsData) {
+            const applications = typeof applicationsData === 'string' 
+              ? JSON.parse(applicationsData)
+              : applicationsData;
+            setJobs(applications);
+            initialJobsRef.current = applications;
+            
+            // Update cache
+            UserCache.set(user.uid, 'applications', applications);
+          }
         }
       } catch (error) {
         console.error('Error loading applications:', error);
@@ -102,6 +112,11 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
     const saveApplications = async () => {
       // Skip save if not loaded yet, or if loading, or already saving
       if (!hasLoadedRef.current || !user?.uid || isLoading || isSaving) return;
+
+      // Don't save if jobs array is the same as initially loaded (prevents saving on mount)
+      if (JSON.stringify(jobs) === JSON.stringify(initialJobsRef.current)) return;
+
+      console.log('Saving applications - jobs changed from initial load');
 
       setIsSaving(true);
       try {
@@ -124,8 +139,9 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
           applications_txt: applicationsJson
         });
         
-        // Update cache
+        // Update cache and initial ref
         UserCache.set(user.uid, 'applications', jobs);
+        initialJobsRef.current = jobs;
       } catch (error) {
         console.error('Error saving applications:', error);
       } finally {
