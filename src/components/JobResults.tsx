@@ -102,10 +102,22 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
       setIsSaving(true);
       try {
         const applicationsJson = JSON.stringify(jobs);
+        
+        // Fetch current user data to get existing profile_data
+        const currentData = await getUserData(user.uid);
+        let existingProfile = {};
+        
+        if (currentData.success && currentData.data?.profile_data) {
+          existingProfile = typeof currentData.data.profile_data === 'string' 
+            ? JSON.parse(currentData.data.profile_data)
+            : currentData.data.profile_data;
+        }
+        
+        // Save with existing profile to satisfy NOT NULL constraint
         await saveUserData({
           user_id: user.uid,
+          profile: existingProfile,
           applications_txt: applicationsJson
-          // Don't send profile here - only update applications_txt
         });
         
         // Update cache
