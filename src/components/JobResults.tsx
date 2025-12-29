@@ -2,23 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { saveUserData } from '../functions/save_user_data';
 import { getUserData } from '../functions/get_user_data';
 import { UserCache } from '../utils/userCache';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from './ui/dialog';
-import { MapPin, Building2, DollarSign, ExternalLink, CheckCircle2, Loader2, Plus, Sparkles, TrendingUp, Calendar, Briefcase, FileText } from 'lucide-react';
+import { MapPin, Building2, DollarSign, ExternalLink, CheckCircle2, Plus, Sparkles, TrendingUp, Calendar, Briefcase, FileText, Edit, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Job {
@@ -33,34 +23,26 @@ interface Job {
   type: string;
   level: string;
   url?: string;
-  status: 'applied' | 'interviewing' | 'offer' | 'rejected';
+  status: 'not applied' | 'applied' | 'interviewing' | 'offer' | 'rejected';
 }
-
-interface JobResultsProps {
-  onJobApplied: (job: Job) => void;
-}
-
-
-
-
 
 interface JobResultsProps {
   onJobApplied: (job: Job) => void;
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   user?: any;
+  onNavigate?: (page: string) => void;
 }
 
-export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProps) {
+export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: JobResultsProps) {
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
-  const [isAutomationOpen, setIsAutomationOpen] = useState(false);
-  const [searchKeywords, setSearchKeywords] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const hasLoadedRef = useRef(false);
   const initialJobsRef = useRef<Job[]>([]);
+  const lastLoadTimeRef = useRef(0);
 
-  // Load applications from database on mount
+  // Load applications from database on mount AND when component becomes visible
   useEffect(() => {
     const loadApplications = async () => {
       if (!user?.uid) {
@@ -68,13 +50,16 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
         return;
       }
 
-      // Check cache first using UserCache utility
+      // Always reload from cache/database to catch new jobs from automation
       const cachedJobs = UserCache.get<Job[]>(user.uid, 'applications');
+      
       if (cachedJobs) {
+        console.log('Loading from cache, found', cachedJobs.length, 'jobs');
         setJobs(cachedJobs);
         initialJobsRef.current = cachedJobs;
         setIsLoading(false);
         hasLoadedRef.current = true;
+        lastLoadTimeRef.current = Date.now();
         return;
       }
 
@@ -101,11 +86,13 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
       } finally {
         setIsLoading(false);
         hasLoadedRef.current = true;
+        lastLoadTimeRef.current = Date.now();
       }
     };
 
+    // Always reload to check for new jobs from automation
     loadApplications();
-  }, [user?.uid]);
+  }, [user?.uid]); // Re-run when user changes or when component mounts
 
   // Save applications to database whenever jobs change
   useEffect(() => {
@@ -210,27 +197,29 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
         toast.error('Please fill in required fields (Title and Company)');
         return;
       }
-      setJobs(jobs.map(j => (j.id === job.id ? { ...job, postedDate: 'Just now' } : j)));
+      setJobs(jobs.map(j => (j.id === job.id ? { ...job } : j)));
       setEditingJobId(null);
-      toast.success(`Added ${job.title} at ${job.company} to your dashboard!`);
+      toast.success(`Saved changes to ${job.title} at ${job.company}!`);
+    };
+
+    const handleCancelEdit = (jobId: string) => {
+      // If it's a new job (empty title), remove it
+      const job = jobs.find(j => j.id === jobId);
+      if (job && !job.title && !job.company) {
+        setJobs(jobs.filter(j => j.id !== jobId));
+      }
+      setEditingJobId(null);
+    };
+
+    const handleEditJob = (jobId: string) => {
+      setEditingJobId(jobId);
     };
 
     const handleEditJobField = (id: string, field: keyof Job, value: string) => {
       setJobs(jobs.map(j => (j.id === id ? { ...j, [field]: value } : j)));
     };
 
-    const handleStartAutomation = () => {
-      toast.success(`Job search automation started! We'll find and add jobs matching: ${searchKeywords}`);
-      setIsAutomationOpen(false);
-      setSearchKeywords('');
-    };
 
-    const handleAutoApply = async (job: Job) => {
-      // Simulate applying
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success(`Applied to ${job.title} at ${job.company}`);
-      onJobApplied(job);
-    };
 
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
@@ -273,70 +262,17 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
                 Add Job Application
               </Button>
               {/* Job Search Automation - Pro Feature */}
-              <Dialog open={isAutomationOpen} onOpenChange={setIsAutomationOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    size="lg"
-                    variant="outline"
-                    className="font-semibold rounded-xl border-2"
-                    style={{ borderColor: '#51355A', color: '#51355A' }}
-                  >
-                    <Sparkles className="mr-2 h-5 w-5" style={{ color: '#9E2B25' }} />
-                    Job Search Automation
-                    <Badge className="ml-2 text-xs" style={{ backgroundColor: '#9E2B25', color: 'white' }}>PRO</Badge>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="rounded-2xl border-2 max-w-md" style={{ borderColor: '#51355A', backgroundColor: '#FFF8F0' }}>
-                  <DialogHeader>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-6 w-6" style={{ color: '#9E2B25' }} />
-                      <DialogTitle className="text-2xl" style={{ color: '#2A0C4E' }}>Job Search Automation</DialogTitle>
-                    </div>
-                    <DialogDescription style={{ color: '#51355A' }}>
-                      Let AI find and add relevant jobs to your dashboard automatically.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="keywords" style={{ color: '#51355A' }}>
-                        Job Titles / Keywords
-                      </Label>
-                      <Input
-                        id="keywords"
-                        placeholder="e.g. Software Engineer, Product Manager"
-                        value={searchKeywords}
-                        onChange={(e) => setSearchKeywords(e.target.value)}
-                        className="rounded-xl"
-                      />
-                      <p className="text-xs" style={{ color: '#51355A', opacity: 0.7 }}>
-                        Separate multiple keywords with commas
-                      </p>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 space-y-2 border" style={{ borderColor: '#51355A', borderWidth: '1px' }}>
-                      <div className="flex items-start gap-2">
-                        <TrendingUp className="h-4 w-4 mt-0.5" style={{ color: '#9E2B25' }} />
-                        <div>
-                          <p className="text-sm font-medium" style={{ color: '#2A0C4E' }}>How it works</p>
-                          <p className="text-xs" style={{ color: '#51355A' }}>
-                            Our AI scans 100+ job boards daily, finds matching positions, and adds them to your dashboard ready for one-click applications.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      onClick={handleStartAutomation}
-                      disabled={!searchKeywords}
-                      className="w-full text-white font-semibold rounded-xl"
-                      style={{ backgroundColor: '#9E2B25' }}
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Start Automation
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="font-semibold rounded-xl border-2"
+                style={{ borderColor: '#51355A', color: '#51355A' }}
+                onClick={() => onNavigate?.('job-search')}
+              >
+                <Sparkles className="mr-2 h-5 w-5" style={{ color: '#9E2B25' }} />
+                Job Search Automation
+                <Badge className="ml-2 text-xs" style={{ backgroundColor: '#9E2B25', color: 'white' }}>PRO</Badge>
+              </Button>
             </div>
           </div>
           {/* Job Listings or Empty State */}
@@ -437,6 +373,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
                               <Select value={job.status} onValueChange={v => handleEditJobField(job.id, 'status', v)}>
                                 <SelectTrigger className="rounded-xl"><SelectValue placeholder="Status" /></SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="not applied">Not Applied</SelectItem>
                                   <SelectItem value="applied">Applied</SelectItem>
                                   <SelectItem value="interviewing">Interviewing</SelectItem>
                                   <SelectItem value="offer">Offer</SelectItem>
@@ -444,13 +381,23 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
                                 </SelectContent>
                               </Select>
                             </div>
-                            <Button
-                              className="mt-2 text-white font-semibold rounded-xl"
-                              style={{ backgroundColor: '#9E2B25' }}
-                              onClick={() => handleSaveJob(job)}
-                            >
-                              Save
-                            </Button>
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                className="flex-1 text-white font-semibold rounded-xl"
+                                style={{ backgroundColor: '#9E2B25' }}
+                                onClick={() => handleSaveJob(job)}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="rounded-xl"
+                                style={{ borderColor: '#51355A', color: '#51355A' }}
+                                onClick={() => handleCancelEdit(job.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         ) : (
                           <>
@@ -509,28 +456,43 @@ export function JobResults({ onJobApplied, jobs, setJobs, user }: JobResultsProp
                         <Badge 
                           className="rounded-full px-4 py-1 w-fit"
                           style={{ 
-                            backgroundColor: job.status === 'offer' ? '#9E2B25' : '#51355A', 
+                            backgroundColor: job.status === 'offer' ? '#9E2B25' : job.status === 'not applied' ? '#9ca3af' : '#51355A', 
                             color: 'white' 
                           }}
                         >
+                          {job.status === 'not applied' && 'Not Applied'}
                           {job.status === 'applied' && 'Applied'}
                           {job.status === 'interviewing' && 'Interviewing'}
                           {job.status === 'offer' && 'Offer Received'}
                           {job.status === 'rejected' && 'Not Selected'}
                         </Badge>
-                        {editingJobId !== job.id && job.url && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            asChild
-                            className="rounded-xl"
-                            style={{ borderColor: '#51355A', color: '#51355A' }}
-                          >
-                            <a href={job.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="mr-2 h-3 w-3" />
-                              View Job
-                            </a>
-                          </Button>
+                        {editingJobId !== job.id && (
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-xl"
+                              style={{ borderColor: '#51355A', color: '#51355A' }}
+                              onClick={() => handleEditJob(job.id)}
+                            >
+                              <Edit className="mr-2 h-3 w-3" />
+                              Edit
+                            </Button>
+                            {job.url && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                asChild
+                                className="rounded-xl"
+                                style={{ borderColor: '#51355A', color: '#51355A' }}
+                              >
+                                <a href={job.url} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="mr-2 h-3 w-3" />
+                                  View Job
+                                </a>
+                              </Button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

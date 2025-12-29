@@ -28,7 +28,7 @@ interface Job {
   type: string;
   level: string;
   url?: string;
-  status: 'applied' | 'interviewing' | 'offer' | 'rejected';
+  status: 'not applied' | 'applied' | 'interviewing' | 'offer' | 'rejected';
 }
 
 

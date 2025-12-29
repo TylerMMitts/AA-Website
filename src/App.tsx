@@ -9,11 +9,13 @@ import { MyProfile } from './components/MyProfile';
 import { JobSearch } from './components/JobSearch';
 import { JobResults } from './components/JobResults';
 import { Analytics } from './components/Analytics';
+import { JobSearchAutomation } from './components/JobSearchAutomation';
 import { Toaster } from './components/ui/sonner';
 import { getUserData } from './functions/get_user_data';
+import { saveUserData } from './functions/save_user_data';
 import { UserCache } from './utils/userCache';
 
-type Page = 'home' | 'demo' | 'profile' | 'search' | 'results' | 'analytics';
+type Page = 'home' | 'demo' | 'profile' | 'search' | 'results' | 'analytics' | 'job-search';
 
 interface Job {
   id: string;
@@ -27,7 +29,7 @@ interface Job {
   type: string;
   level: string;
   url?: string;
-  status: 'applied' | 'interviewing' | 'offer' | 'rejected';
+  status: 'not applied' | 'applied' | 'interviewing' | 'offer' | 'rejected';
 }
 
 export default function App() {
@@ -121,10 +123,60 @@ export default function App() {
     setJobs(prev => [...prev, job]);
   };
 
+  const handleAddJobFromSearch = async (job: Job) => {
+    // Add job to the dashboard and persist to database immediately
+    if (user?.uid) {
+      try {
+        // Get current jobs and profile from database
+        const response = await getUserData(user.uid);
+        let currentJobs: Job[] = [];
+        let profileData = {};
+        
+        if (response.success && response.data) {
+          // Get existing applications
+          const applicationsData = response.data.applications_txt || response.data.applications;
+          if (applicationsData) {
+            currentJobs = typeof applicationsData === 'string' 
+              ? JSON.parse(applicationsData)
+              : applicationsData;
+          }
+          
+          // Get existing profile data (required by database)
+          profileData = response.data.profile_data || {};
+        }
+        
+        // Add new job
+        const updatedJobs = [...currentJobs, job];
+        
+        // Save to database - must include profile_data to avoid constraint violation
+        await saveUserData({
+          user_id: user.uid,
+          profile: profileData,
+          applications_txt: JSON.stringify(updatedJobs)
+        });
+        
+        // Update cache so dashboard will load it
+        UserCache.set(user.uid, 'applications', updatedJobs);
+        
+        // Update local state
+        setJobs(updatedJobs);
+        
+        console.log('Job added to database:', job.title, 'Total jobs:', updatedJobs.length);
+      } catch (error) {
+        console.error('Error saving job to database:', error);
+        throw error;
+      }
+    }
+  };
+
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page as Page);
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage onGetStarted={handleGetStarted} onNavigate={setCurrentPage} />;
+        return <HomePage onGetStarted={handleGetStarted} onNavigate={handleNavigate} />;
       case 'demo':
         return <DemoPage onGetStarted={handleGetStarted} />;
       case 'profile':
@@ -132,11 +184,13 @@ export default function App() {
       case 'search':
         return <JobSearch onSearch={handleSearch} />;
       case 'results':
-        return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} />;
+        return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} onNavigate={handleNavigate} />;
       case 'analytics':
         return <Analytics jobs={jobs} setJobs={setJobs} />;
+      case 'job-search':
+        return <JobSearchAutomation onAddJob={handleAddJobFromSearch} onBack={() => setCurrentPage('results')} />;
       default:
-        return <HomePage onGetStarted={handleGetStarted} onNavigate={setCurrentPage} />;
+        return <HomePage onGetStarted={handleGetStarted} onNavigate={handleNavigate} />;
     }
   };
 

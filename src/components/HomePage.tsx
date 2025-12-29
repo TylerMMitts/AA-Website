@@ -1,6 +1,7 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle2, Chrome, Zap, Target, TrendingUp, Sparkles, Award, Shield } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 interface HomePageProps {
   onGetStarted: () => void;
@@ -35,8 +36,9 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                style={{ background: 'radial-gradient(circle, rgba(81,53,90,0.08) 0%, transparent 70%)' }}></div>
         </div>
 
-        {/* Hero Title at the very top */}
-        <div className="w-full flex justify-center z-20 relative pt-8">
+        {/* Logo and Hero Title at the very top */}
+        <div className="w-full flex flex-col items-center z-20 relative pt-8 space-y-6">
+          <img src={logo} alt="ApplyApply Logo" style={{ height: '8em', width: 'auto' }} />
           <h2 className="text-3xl md:text-4xl font-medium mt-0 mb-4" style={{ color: '#2A0C4E', fontStyle: 'italic', fontFamily: 'Inter', fontSize: '2.5em' }}>
             Make applying for jobs{' '}
             <span style={{ fontFamily: 'Great Vibes, cursive', fontStyle: 'italic', color: '#9E2B25', fontSize: '2.5em' }}>

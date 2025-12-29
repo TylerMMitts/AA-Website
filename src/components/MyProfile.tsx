@@ -126,9 +126,6 @@ export function MyProfile() {
           }
         }
         
-        console.log('Parsed profileData:', profileData);
-        console.log('Is profileData empty?', Object.keys(profileData).length === 0);
-        
         // Store existing resume URL if available
         if (userData.resume_file_url) {
           setExistingResumeUrl(userData.resume_file_url);
@@ -148,12 +145,7 @@ export function MyProfile() {
           resumeUrl: userData.resume_file_url
         });
         
-        // Show appropriate message based on whether profile has data
-        if (Object.keys(profileData).length === 0) {
-          toast.info('No saved profile found. Please fill out your information.');
-        } else {
-          toast.success('Profile loaded successfully!');
-        }
+        toast.success('Profile loaded successfully!');
       } else {
         console.log('No existing profile data found, starting with empty form');
         toast.info('No saved profile found. Please fill out your information.');
@@ -875,7 +867,9 @@ export function MyProfile() {
           <Button
             onClick={handleSave}
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700"
+            style={{ backgroundColor: isSaving ? '#3e2846' : '#51355A', color: '#fff', border: 'none' }}
+            onMouseOver={e => (e.currentTarget.style.backgroundColor = '#3e2846')}
+            onMouseOut={e => (e.currentTarget.style.backgroundColor = '#51355A')}
             disabled={isSaving}
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
