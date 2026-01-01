@@ -69,7 +69,17 @@ export default function App() {
         // Fetch user data when logged in and cache it
         try {
           const response = await getUserData(currentUser.uid);
-          if (response.success && response.data) {
+          
+          // If user doesn't exist in database, create blank entry
+          if (!response.success || !response.data) {
+            console.log('New user detected, creating blank database entry');
+            await saveUserData({
+              user_id: currentUser.uid,
+              profile: {}, // Blank profile data
+              applications_txt: JSON.stringify([]) // Empty applications array
+            });
+            console.log('Blank user entry created successfully');
+          } else if (response.success && response.data) {
             // Cache profile data
             if (response.data.profile_data) {
               const profileData = typeof response.data.profile_data === 'string'
@@ -234,7 +244,7 @@ export default function App() {
       case 'search':
         return <JobSearch onSearch={handleSearch} />;
       case 'dashboard':
-        return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} onNavigate={handleNavigate} />;
+        return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} onNavigate={handleNavigate} membership={membership} />;
       case 'analytics':
         return <Analytics jobs={jobs} setJobs={setJobs} />;
       case 'job-search':

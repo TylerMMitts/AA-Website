@@ -138,14 +138,6 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={onBack}
-            className="mb-4"
-            style={{ color: '#51355A' }}
-          >
-            ← Back to Dashboard
-          </Button>
           <h1 className="text-4xl md:text-5xl font-bold mb-2" style={{ color: '#2A0C4E' }}>
             Job Search Automation
           </h1>

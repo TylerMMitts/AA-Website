@@ -44,7 +44,26 @@ export function MyProfile() {
     
     // Professional Information
     expectedIncome: '',
-    workExperience: '',
+    workExperiences: [] as Array<{
+      id: string;
+      title: string;
+      company: string;
+      location: string;
+      startDate: string;
+      endDate: string;
+      currentlyWorking: boolean;
+      description: string;
+      achievements: string;
+    }>,
+    projects: [] as Array<{
+      id: string;
+      name: string;
+      description: string;
+      technologies: string;
+      link: string;
+      startDate: string;
+      endDate: string;
+    }>,
     education: '',
     
     // Education Details
@@ -68,6 +87,68 @@ export function MyProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(null);
+
+  // Helper functions for work experience
+  const addWorkExperience = () => {
+    const newExperience = {
+      id: Date.now().toString(),
+      title: '',
+      company: '',
+      location: '',
+      startDate: '',
+      endDate: '',
+      currentlyWorking: false,
+      description: '',
+      achievements: '',
+    };
+    setFormData({ ...formData, workExperiences: [...formData.workExperiences, newExperience] });
+  };
+
+  const removeWorkExperience = (id: string) => {
+    setFormData({
+      ...formData,
+      workExperiences: formData.workExperiences.filter(exp => exp.id !== id)
+    });
+  };
+
+  const updateWorkExperience = (id: string, field: string, value: any) => {
+    setFormData({
+      ...formData,
+      workExperiences: formData.workExperiences.map(exp =>
+        exp.id === id ? { ...exp, [field]: value } : exp
+      )
+    });
+  };
+
+  // Helper functions for projects
+  const addProject = () => {
+    const newProject = {
+      id: Date.now().toString(),
+      name: '',
+      description: '',
+      technologies: '',
+      link: '',
+      startDate: '',
+      endDate: '',
+    };
+    setFormData({ ...formData, projects: [...formData.projects, newProject] });
+  };
+
+  const removeProject = (id: string) => {
+    setFormData({
+      ...formData,
+      projects: formData.projects.filter(proj => proj.id !== id)
+    });
+  };
+
+  const updateProject = (id: string, field: string, value: any) => {
+    setFormData({
+      ...formData,
+      projects: formData.projects.map(proj =>
+        proj.id === id ? { ...proj, [field]: value } : proj
+      )
+    });
+  };
 
   // Loads user profile data when component mounts or user changes
   useEffect(() => {
@@ -552,34 +633,248 @@ export function MyProfile() {
           </CardContent>
         </Card>
 
-        {/* Professional Information */}
+        {/* Work Experience */}
         <Card>
           <CardHeader>
-            <CardTitle>Professional Information</CardTitle>
+            <CardTitle>Work Experience</CardTitle>
             <CardDescription>
-              Your work experience and education background
+              Add your work history - the more detailed, the better we can tailor your resumes and cover letters
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-blue-800 text-sm">
+                💡 <strong>Pro Tip:</strong> The more work experiences you add with detailed achievements, 
+                the better our AI can customize your resumes and cover letters for each specific job application.
+              </p>
+            </div>
+
+            {formData.workExperiences.map((experience, index) => (
+              <div key={experience.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-semibold text-gray-900">Experience #{index + 1}</h4>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeWorkExperience(experience.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </Button>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Job Title</Label>
+                    <Input
+                      value={experience.title}
+                      onChange={(e) => updateWorkExperience(experience.id, 'title', e.target.value)}
+                      placeholder="Software Engineer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Company</Label>
+                    <Input
+                      value={experience.company}
+                      onChange={(e) => updateWorkExperience(experience.id, 'company', e.target.value)}
+                      placeholder="Tech Corp"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Location</Label>
+                  <Input
+                    value={experience.location}
+                    onChange={(e) => updateWorkExperience(experience.id, 'location', e.target.value)}
+                    placeholder="San Francisco, CA"
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input
+                      type="month"
+                      value={experience.startDate}
+                      onChange={(e) => updateWorkExperience(experience.id, 'startDate', e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>End Date</Label>
+                    <Input
+                      type="month"
+                      value={experience.endDate}
+                      onChange={(e) => updateWorkExperience(experience.id, 'endDate', e.target.value)}
+                      disabled={experience.currentlyWorking}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`currently-working-${experience.id}`}
+                    checked={experience.currentlyWorking}
+                    onCheckedChange={(checked) =>
+                      updateWorkExperience(experience.id, 'currentlyWorking', checked as boolean)
+                    }
+                  />
+                  <Label htmlFor={`currently-working-${experience.id}`} className="cursor-pointer font-normal">
+                    I currently work here
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Job Description</Label>
+                  <Textarea
+                    value={experience.description}
+                    onChange={(e) => updateWorkExperience(experience.id, 'description', e.target.value)}
+                    placeholder="Describe your role and responsibilities..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Key Achievements</Label>
+                  <Textarea
+                    value={experience.achievements}
+                    onChange={(e) => updateWorkExperience(experience.id, 'achievements', e.target.value)}
+                    placeholder="• Increased system performance by 40%&#10;• Led a team of 5 developers&#10;• Implemented new feature that generated $500K in revenue"
+                    rows={4}
+                  />
+                  <p className="text-sm text-gray-500">Use bullet points for best results</p>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              onClick={addWorkExperience}
+              className="w-full border-dashed border-2"
+            >
+              <span className="text-xl mr-2">+</span>
+              Add Work Experience
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Projects */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Projects</CardTitle>
+            <CardDescription>
+              Showcase your personal or professional projects - helps tailor applications for technical roles
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-blue-800 text-sm">
+                💡 <strong>Pro Tip:</strong> Adding detailed projects demonstrates your practical skills and 
+                passion, making your AI-generated resumes and cover letters more compelling and specific.
+              </p>
+            </div>
+
+            {formData.projects.map((project, index) => (
+              <div key={project.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-semibold text-gray-900">Project #{index + 1}</h4>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeProject(project.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Project Name</Label>
+                  <Input
+                    value={project.name}
+                    onChange={(e) => updateProject(project.id, 'name', e.target.value)}
+                    placeholder="E-commerce Platform"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    value={project.description}
+                    onChange={(e) => updateProject(project.id, 'description', e.target.value)}
+                    placeholder="Built a full-stack e-commerce platform with user authentication, payment processing, and inventory management..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Technologies Used</Label>
+                  <Input
+                    value={project.technologies}
+                    onChange={(e) => updateProject(project.id, 'technologies', e.target.value)}
+                    placeholder="React, Node.js, PostgreSQL, AWS"
+                  />
+                  <p className="text-sm text-gray-500">Separate with commas</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Project Link (Optional)</Label>
+                  <Input
+                    type="url"
+                    value={project.link}
+                    onChange={(e) => updateProject(project.id, 'link', e.target.value)}
+                    placeholder="https://github.com/username/project"
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input
+                      type="month"
+                      value={project.startDate}
+                      onChange={(e) => updateProject(project.id, 'startDate', e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>End Date (or Expected)</Label>
+                    <Input
+                      type="month"
+                      value={project.endDate}
+                      onChange={(e) => updateProject(project.id, 'endDate', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              onClick={addProject}
+              className="w-full border-dashed border-2"
+            >
+              <span className="text-xl mr-2">+</span>
+              Add Project
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Education Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Education</CardTitle>
+            <CardDescription>
+              Your educational background
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="workExperience">Work Experience</Label>
-              <Textarea
-                id="workExperience"
-                value={formData.workExperience}
-                onChange={(e) => setFormData({ ...formData, workExperience: e.target.value })}
-                placeholder="Software Engineer at Tech Corp (2020-Present)&#10;Junior Developer at StartupXYZ (2018-2020)&#10;&#10;Describe your work history..."
-                rows={6}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="education">Education</Label>
-              <Textarea
+              <Label htmlFor="education">Degree & University</Label>
+              <Input
                 id="education"
                 value={formData.education}
                 onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-                placeholder="Bachelor of Science in Computer Science&#10;University of California, 2018&#10;&#10;List your educational background..."
-                rows={4}
+                placeholder="Bachelor of Science in Computer Science - University of California"
               />
             </div>
 

@@ -8,8 +8,10 @@ import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { MapPin, Building2, DollarSign, ExternalLink, CheckCircle2, Plus, Sparkles, TrendingUp, Calendar, Briefcase, FileText, Edit, X } from 'lucide-react';
+import { MapPin, Building2, DollarSign, ExternalLink, CheckCircle2, Plus, Sparkles, TrendingUp, Calendar, Briefcase, FileText, Edit, X, File, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateDocument, downloadDocument } from '../functions/generate_documents';
+import type { MembershipStatus } from '../utils/stripe';
 
 interface Job {
   id: string;
@@ -33,12 +35,14 @@ interface JobResultsProps {
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   user?: any;
   onNavigate?: (page: string) => void;
+  membership?: MembershipStatus | null;
 }
 
-export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: JobResultsProps) {
+export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, membership }: JobResultsProps) {
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [generatingDocFor, setGeneratingDocFor] = useState<{ jobId: string; type: 'resume' | 'cover_letter' } | null>(null);
   const hasLoadedRef = useRef(false);
   const initialJobsRef = useRef<Job[]>([]);
   const lastLoadTimeRef = useRef(0);
@@ -267,6 +271,71 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
       if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
       
       return added.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const handleGenerateDocument = async (job: Job, documentType: 'resume' | 'cover_letter') => {
+      if (!user?.uid) {
+        toast.error('Please log in to generate documents');
+        return;
+      }
+
+      if (!membership?.isPro) {
+        toast.error('This feature is only available for Pro members', {
+          action: {
+            label: 'Upgrade',
+            onClick: () => onNavigate?.('membership'),
+          },
+        });
+        return;
+      }
+
+      setGeneratingDocFor({ jobId: job.id, type: documentType });
+      const toastId = toast.loading(`Generating ${documentType === 'resume' ? 'resume' : 'cover letter'}...`);
+
+      try {
+        // Get user profile data
+        const userDataResponse = await getUserData(user.uid);
+        if (!userDataResponse.success || !userDataResponse.data) {
+          throw new Error('Failed to load user profile');
+        }
+
+        const profileData = userDataResponse.data.profile_data || {};
+
+        // Generate document using AWS Bedrock
+        const result = await generateDocument({
+          user_id: user.uid,
+          profile_data: profileData,
+          job_data: {
+            title: job.title,
+            company: job.company,
+            location: job.location,
+            description: job.description,
+            salary: job.salary,
+            type: job.type,
+            level: job.level,
+          },
+          document_type: documentType,
+          output_format: 'pdf',  // Request PDF format
+        });
+
+        if (!result.success || !result.content) {
+          throw new Error(result.error || 'Failed to generate document');
+        }
+
+        // Download the document
+        const filename = documentType === 'resume'
+          ? `Resume_${job.company}_${job.title}`.replace(/[^a-zA-Z0-9_]/g, '_')
+          : `CoverLetter_${job.company}_${job.title}`.replace(/[^a-zA-Z0-9_]/g, '_');
+
+        downloadDocument(result.content, filename, result.format || 'pdf');
+
+        toast.success(`${documentType === 'resume' ? 'Resume' : 'Cover letter'} generated and downloaded!`, { id: toastId });
+      } catch (error) {
+        console.error('Error generating document:', error);
+        toast.error(error instanceof Error ? error.message : 'Failed to generate document', { id: toastId });
+      } finally {
+        setGeneratingDocFor(null);
+      }
     };
 
 
@@ -521,7 +590,53 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
                           {job.status === 'rejected' && 'Not Selected'}
                         </Badge>
                         {editingJobId !== job.id && (
-                          <div className="flex gap-2">
+                          <div className="flex flex-col gap-2">
+                            {/* Pro Feature: Document Generation */}
+                            {membership?.isPro && (
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-xl flex-1"
+                                  style={{ borderColor: '#9E2B25', color: '#9E2B25' }}
+                                  onClick={() => handleGenerateDocument(job, 'resume')}
+                                  disabled={generatingDocFor?.jobId === job.id && generatingDocFor?.type === 'resume'}
+                                >
+                                  {generatingDocFor?.jobId === job.id && generatingDocFor?.type === 'resume' ? (
+                                    <>
+                                      <Sparkles className="mr-2 h-3 w-3 animate-spin" />
+                                      Generating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <File className="mr-2 h-3 w-3" />
+                                      Resume
+                                    </>
+                                  )}
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-xl flex-1"
+                                  style={{ borderColor: '#9E2B25', color: '#9E2B25' }}
+                                  onClick={() => handleGenerateDocument(job, 'cover_letter')}
+                                  disabled={generatingDocFor?.jobId === job.id && generatingDocFor?.type === 'cover_letter'}
+                                >
+                                  {generatingDocFor?.jobId === job.id && generatingDocFor?.type === 'cover_letter' ? (
+                                    <>
+                                      <Sparkles className="mr-2 h-3 w-3 animate-spin" />
+                                      Generating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Mail className="mr-2 h-3 w-3" />
+                                      Cover Letter
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            )}
+                            <div className="flex gap-2">
                             <Button 
                               variant="outline" 
                               size="sm" 
@@ -546,6 +661,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
                                 </a>
                               </Button>
                             )}
+                            </div>
                           </div>
                         )}
                       </div>
