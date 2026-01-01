@@ -156,7 +156,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-white">
+      <section className="py-32 bg-white min-h-[900px]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-4xl md:text-5xl font-bold" style={{ color: '#2A0C4E' }}>
@@ -215,12 +215,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
             </Card>
 
             {/* Paid Plan */}
-            <Card className="rounded-3xl border-4 overflow-hidden shadow-2xl relative" style={{ borderColor: '#9E2B25' }}>
-              {/* Recommended Badge */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-semibold text-white z-10"
-                   style={{ backgroundColor: '#9E2B25' }}>
-                ⭐ Most Popular
-              </div>
+            <Card className="rounded-3xl border-4 overflow-hidden relative" style={{ borderColor: '#51355A', borderWidth: '2px', minHeight: 500 }}>
               
               <CardHeader className="space-y-4 pb-8" style={{ backgroundColor: '#51355A' }}>
                 <div className="space-y-2">
@@ -266,10 +261,6 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                     <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
                     <span className="text-lg" style={{ color: '#51355A' }}>Priority support</span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
-                    <span className="text-lg" style={{ color: '#51355A' }}>Advanced analytics</span>
-                  </div>
                 </div>
               </CardContent>
               <CardFooter className="pt-0 pb-8">
@@ -287,7 +278,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
       </section>
 
       {/* How It Works - Simple */}
-      <section className="py-24" style={{ backgroundColor: '#FFF8F0' }}>
+      <section className="py-24" style={{ backgroundColor: '#FFF8F0', minHeight: 400, paddingTop: 64, paddingBottom: 64 }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-4xl md:text-5xl font-bold" style={{ color: '#2A0C4E' }}>

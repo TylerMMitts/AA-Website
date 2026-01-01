@@ -60,8 +60,8 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLog
               aria-label="Main navigation"
             >
               <div
-                className="flex justify-between items-center px-20 py-3 rounded-full shadow-lg border border-[#E5E0F0] mx-auto w-full transitio n-all duration-300"
-                style={{ minHeight: 60, backgroundColor: '#51355a', width: '24em' }}
+                className="flex justify-between items-center px-32 py-3 rounded-full shadow-lg border border-[#E5E0F0] mx-auto w-full transition-all duration-300"
+                style={{ minHeight: 60, backgroundColor: '#51355a', width: '32em', maxWidth: 600, paddingLeft: 48, paddingRight: 48 }}
               >
                 <button
                   onClick={() => onNavigate('dashboard')}

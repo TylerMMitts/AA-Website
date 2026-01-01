@@ -42,11 +42,26 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
   const hasLoadedRef = useRef(false);
   const initialJobsRef = useRef<Job[]>([]);
   const lastLoadTimeRef = useRef(0);
+  const currentUserRef = useRef<string | null>(null);
+
+  // Clear jobs when user changes (switching accounts)
+  useEffect(() => {
+    if (user?.uid && currentUserRef.current && currentUserRef.current !== user.uid) {
+      console.log('User changed, clearing jobs');
+      setJobs([]);
+      initialJobsRef.current = [];
+      hasLoadedRef.current = false;
+    }
+    currentUserRef.current = user?.uid || null;
+  }, [user?.uid, setJobs]);
 
   // Load applications from database on mount AND when component becomes visible
   useEffect(() => {
     const loadApplications = async () => {
       if (!user?.uid) {
+        setJobs([]);
+        initialJobsRef.current = [];
+        hasLoadedRef.current = false;
         setIsLoading(false);
         return;
       }

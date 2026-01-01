@@ -21,7 +21,7 @@ import { UserCache } from './utils/userCache';
 import { getMembership } from './functions/get_membership';
 import type { MembershipStatus } from './utils/stripe';
 
-type Page = 'home' | 'demo' | 'profile' | 'search' | 'dashboard' | 'analytics' | 'job-search' | 'membership' | 'cancel-subscription' | 'checkout-success' | 'checkout-cancel';
+type Page = 'home' | 'demo' | 'login' | 'profile' | 'search' | 'dashboard' | 'analytics' | 'job-search' | 'membership' | 'cancel-subscription' | 'checkout-success' | 'checkout-cancel';
 
 interface Job {
   id: string;
@@ -41,7 +41,6 @@ interface Job {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showLogin, setShowLogin] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [membership, setMembership] = useState<MembershipStatus | null>(null);
@@ -49,7 +48,7 @@ export default function App() {
   useEffect(() => {
     // Check URL and set page from pathname
     const path = window.location.pathname.replace('/', '') || 'home';
-    const validPages: Page[] = ['home', 'demo', 'profile', 'search', 'dashboard', 'analytics', 'job-search', 'membership', 'cancel-subscription', 'checkout-success', 'checkout-cancel'];
+    const validPages: Page[] = ['home', 'demo', 'login', 'profile', 'search', 'dashboard', 'analytics', 'job-search', 'membership', 'cancel-subscription', 'checkout-success', 'checkout-cancel'];
     if (validPages.includes(path as Page)) {
       setCurrentPage(path as Page);
     }
@@ -101,11 +100,6 @@ export default function App() {
         } catch (error) {
           console.error('Error loading user data or membership on login:', error);
         }
-        setShowLogin(false);
-        // Auto-redirect logged-in users to dashboard if on home page
-        if (currentPage === 'home') {
-          setCurrentPage('dashboard');
-        }
       }
       setLoading(false);
     });
@@ -117,7 +111,7 @@ export default function App() {
   }, [currentPage]);
 
   const handleLogin = () => {
-    setShowLogin(true);
+    handleNavigate('login');
   };
 
   const handleLogout = async () => {
@@ -131,15 +125,14 @@ export default function App() {
   };
 
   const handleLoginSuccess = () => {
-    setShowLogin(false);
-    setCurrentPage('dashboard'); // Redirect to dashboard after login
+    handleNavigate('dashboard'); // Redirect to dashboard after login
   };
 
   const handleGetStarted = () => {
     if (user) {
-      setCurrentPage('dashboard'); // Logged-in users go to dashboard
+      handleNavigate('dashboard'); // Logged-in users go to dashboard
     } else {
-      setShowLogin(true);
+      handleNavigate('login');
     }
   };
 
@@ -234,6 +227,8 @@ export default function App() {
         return <HomePage onGetStarted={handleGetStarted} onNavigate={handleNavigate} />;
       case 'demo':
         return <DemoPage onGetStarted={handleGetStarted} />;
+      case 'login':
+        return <FirebaseLogin onLoginSuccess={handleLoginSuccess} onClose={() => handleNavigate('home')} />;
       case 'profile':
         return <MyProfile />;
       case 'search':
@@ -266,10 +261,6 @@ export default function App() {
         </div>
       </div>
     );
-  }
-
-  if (showLogin) {
-    return <FirebaseLogin onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
