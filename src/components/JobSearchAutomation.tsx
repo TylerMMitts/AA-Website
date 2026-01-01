@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
@@ -26,9 +27,10 @@ interface Job {
 interface JobSearchAutomationProps {
   onAddJob: (job: Job) => void;
   onBack: () => void;
+  isPro?: boolean;
 }
 
-export function JobSearchAutomation({ onAddJob, onBack }: JobSearchAutomationProps) {
+export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSearchAutomationProps) {
   const [searchParams, setSearchParams] = useState<JobListingInput>({
     country: 'us',
     title: '',
@@ -208,10 +210,11 @@ export function JobSearchAutomation({ onAddJob, onBack }: JobSearchAutomationPro
             </div>
             <Button
               onClick={handleSearch}
-              disabled={isSearching}
+              disabled={isSearching || !isPro}
               className="w-full text-white font-semibold rounded-xl"
-              style={{ backgroundColor: '#9E2B25' }}
+              style={{ backgroundColor: isPro ? '#9E2B25' : '#ccc', cursor: isPro ? 'pointer' : 'not-allowed' }}
               size="lg"
+              title={isPro ? '' : 'Upgrade to Pro to use job automation'}
             >
               {isSearching ? (
                 <>
@@ -221,10 +224,15 @@ export function JobSearchAutomation({ onAddJob, onBack }: JobSearchAutomationPro
               ) : (
                 <>
                   <Search className="mr-2 h-5 w-5" />
-                  Search Jobs
+                  {isPro ? 'Search Jobs' : 'Pro Required'}
                 </>
               )}
             </Button>
+            {!isPro && (
+              <div className="text-center text-sm mt-2" style={{ color: '#9E2B25' }}>
+                Job automation is a Pro feature. Upgrade to Pro to unlock!
+              </div>
+            )}
           </CardContent>
         </Card>
 

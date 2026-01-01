@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { User, LogOut, BarChart3 } from 'lucide-react';
+import { User, LogOut, BarChart3, Crown } from 'lucide-react';
 
 interface NavigationProps {
   currentPage: string;
@@ -64,9 +64,9 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLog
                 style={{ minHeight: 60, backgroundColor: '#51355a', width: '24em' }}
               >
                 <button
-                  onClick={() => onNavigate('results')}
+                  onClick={() => onNavigate('dashboard')}
                   className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
-                    currentPage === 'results'
+                    currentPage === 'dashboard'
                       ? '!bg-[#51355A] !text-white !shadow-xl'
                       : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
                   }`}
@@ -126,10 +126,18 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLog
                     </p>
                   </div>
                   <DropdownMenuSeparator style={{ backgroundColor: '#51355A', opacity: 0.2 }} />
+                  <DropdownMenuItem 
+                    onClick={() => onNavigate('membership')}
+                    className="rounded-lg cursor-pointer hover:bg-white"
+                    style={{ color: '#51355A' }}
+                  >
+                    <Crown className="mr-2 h-4 w-4" />
+                    Membership
+                  </DropdownMenuItem>
                   {/* Mobile Navigation Links (visible on mobile only) */}
                   <div className="md:hidden">
                     <DropdownMenuItem 
-                      onClick={() => onNavigate('results')}
+                      onClick={() => onNavigate('dashboard')}
                       className="rounded-lg cursor-pointer hover:bg-white"
                       style={{ color: '#51355A' }}
                     >

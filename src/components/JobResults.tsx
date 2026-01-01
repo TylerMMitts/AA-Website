@@ -24,6 +24,7 @@ interface Job {
   level: string;
   url?: string;
   status: 'not applied' | 'applied' | 'interviewing' | 'offer' | 'rejected';
+  dateAdded?: string;
 }
 
 interface JobResultsProps {
@@ -186,6 +187,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
           description: '',
           postedDate: 'Just now',
           status: 'applied',
+          dateAdded: new Date().toISOString(),
         },
         ...jobs,
       ]);
@@ -211,6 +213,17 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
       setEditingJobId(null);
     };
 
+    const handleDeleteJob = (jobId: string) => {
+      const job = jobs.find(j => j.id === jobId);
+      if (job) {
+        if (window.confirm(`Are you sure you want to delete the application for ${job.title} at ${job.company}?`)) {
+          setJobs(jobs.filter(j => j.id !== jobId));
+          setEditingJobId(null);
+          toast.success(`Deleted ${job.title} at ${job.company}`);
+        }
+      }
+    };
+
     const handleEditJob = (jobId: string) => {
       setEditingJobId(jobId);
     };
@@ -219,6 +232,27 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
       setJobs(jobs.map(j => (j.id === id ? { ...j, [field]: value } : j)));
     };
 
+    const formatDateAdded = (dateAdded?: string) => {
+      if (!dateAdded) return 'Recently';
+      
+      const added = new Date(dateAdded);
+      const now = new Date();
+      const diffMs = now.getTime() - added.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      const diffWeeks = Math.floor(diffDays / 7);
+      const diffMonths = Math.floor(diffDays / 30);
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+      if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+      if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+      if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`;
+      if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
+      
+      return added.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
 
 
     return (
@@ -226,9 +260,6 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Dashboard Header */}
           <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#2A0C4E' }}>
-              Dashboard
-            </h1>
             {/* Redesigned Compact Stats Cards */}
             <div className="flex flex-wrap gap-4 mb-8 justify-center md:justify-start">
               {stats.map((stat) => (
@@ -397,6 +428,14 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
                               >
                                 <X className="h-4 w-4" />
                               </Button>
+                              <Button
+                                variant="outline"
+                                className="rounded-xl"
+                                style={{ borderColor: '#9E2B25', color: '#9E2B25' }}
+                                onClick={() => handleDeleteJob(job.id)}
+                              >
+                                Delete
+                              </Button>
                             </div>
                           </div>
                         ) : (
@@ -446,7 +485,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate }: Jo
                               )}
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
-                                <span>Added {job.postedDate}</span>
+                                <span>Added {formatDateAdded(job.dateAdded)}</span>
                               </div>
                             </div>
                           </>

@@ -29,6 +29,8 @@ interface Job {
   level: string;
   url?: string;
   status: 'not applied' | 'applied' | 'interviewing' | 'offer' | 'rejected';
+  dateApplied?: string;
+  dateAdded?: string;
 }
 
 
@@ -37,23 +39,73 @@ interface AnalyticsProps {
   setJobs: Dispatch<SetStateAction<Job[]>>;
 }
 
-const chartData = [
-  { date: 'Oct 25', applications: 5 },
-  { date: 'Oct 26', applications: 8 },
-  { date: 'Oct 27', applications: 12 },
-  { date: 'Oct 28', applications: 15 },
-  { date: 'Oct 29', applications: 18 },
-  { date: 'Oct 30', applications: 22 },
-  { date: 'Oct 31', applications: 25 },
-  { date: 'Nov 1', applications: 30 },
-  { date: 'Nov 2', applications: 35 },
-  { date: 'Nov 3', applications: 40 },
-  { date: 'Nov 4', applications: 45 },
-  { date: 'Nov 5', applications: 52 },
-];
-
-
 export function Analytics({ jobs, setJobs }: AnalyticsProps) {
+  
+  // Generate chart data from actual job applications
+  const generateChartData = () => {
+    // Filter jobs that have been applied to (not 'not applied')
+    const appliedJobs = jobs.filter(job => job.status !== 'not applied');
+    
+    if (appliedJobs.length === 0) {
+      return [];
+    }
+
+    // Parse dates and sort by application date
+    const jobsWithDates = appliedJobs.map(job => {
+      // Use dateApplied if available, otherwise fall back to dateAdded
+      const dateStr = job.dateApplied || job.dateAdded;
+      return {
+        ...job,
+        parsedDate: dateStr ? new Date(dateStr) : new Date()
+      };
+    }).sort((a, b) => a.parsedDate.getTime() - b.parsedDate.getTime());
+
+    // Group by date and create cumulative count
+    const dateMap: { [key: string]: number } = {};
+    let cumulativeCount = 0;
+
+    jobsWithDates.forEach(job => {
+      const dateKey = job.parsedDate.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      if (!dateMap[dateKey]) {
+        dateMap[dateKey] = 0;
+      }
+      dateMap[dateKey]++;
+    });
+
+    // Convert to chart data array with cumulative values
+    const chartDataArray = Object.keys(dateMap).map(dateKey => {
+      cumulativeCount += dateMap[dateKey];
+      return {
+        date: dateKey,
+        applications: cumulativeCount
+      };
+    });
+
+    // If we have less than 7 data points, pad with earlier dates showing 0
+    if (chartDataArray.length > 0 && chartDataArray.length < 7) {
+      const firstDate = jobsWithDates[0].parsedDate;
+      const paddedData = [];
+      
+      for (let i = 6; i >= chartDataArray.length; i--) {
+        const date = new Date(firstDate);
+        date.setDate(date.getDate() - i);
+        paddedData.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          applications: 0
+        });
+      }
+      
+      return [...paddedData, ...chartDataArray];
+    }
+
+    return chartDataArray;
+  };
+
+  const chartData = generateChartData();
 
   const metrics = {
     applied: jobs.filter(j => j.status === 'applied').length,
@@ -90,7 +142,7 @@ export function Analytics({ jobs, setJobs }: AnalyticsProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-gray-900 mb-2">Analytics Dashboard</h1>
+        <h1 className="text-gray-900 mb-2">Analytics</h1>
         <p className="text-gray-600">
           Track your job application journey
         </p>
@@ -148,42 +200,58 @@ export function Analytics({ jobs, setJobs }: AnalyticsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Applications Over Time</CardTitle>
-            <div className="flex items-center gap-2 text-green-600">
-              <TrendingUp className="h-4 w-4" />
-              <span>+15% this week</span>
-            </div>
+            {chartData.length > 1 && (
+              <div className="flex items-center gap-2 text-green-600">
+                <TrendingUp className="h-4 w-4" />
+                <span>
+                  {chartData[chartData.length - 1].applications - 
+                   (chartData.length > 1 ? chartData[chartData.length - 2].applications : 0)} 
+                  {' '}recent applications
+                </span>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="date" 
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-              />
-              <YAxis 
-                stroke="#6b7280"
-                style={{ fontSize: '12px' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="applications" 
-                stroke="#51355a" 
-                strokeWidth={2}
-                dot={{ fill: '#51355a', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="#6b7280"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis 
+                  stroke="#6b7280"
+                  style={{ fontSize: '12px' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="applications" 
+                  stroke="#51355a" 
+                  strokeWidth={2}
+                  dot={{ fill: '#51355a', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              <div className="text-center">
+                <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                <p>No application data yet</p>
+                <p className="text-sm">Start applying to jobs to see your progress</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -302,11 +370,14 @@ function JobCard({ job, onStatusChange, getStatusColor }: JobCardProps) {
             </div>
           </div>
           <p className="text-gray-600">
-            Applied on {new Date(job.dateApplied).toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              year: 'numeric' 
-            })}
+            {job.dateApplied 
+              ? `Applied on ${new Date(job.dateApplied).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}`
+              : `Posted ${job.postedDate}`
+            }
           </p>
         </div>
 

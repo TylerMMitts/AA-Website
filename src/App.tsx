@@ -9,13 +9,19 @@ import { MyProfile } from './components/MyProfile';
 import { JobSearch } from './components/JobSearch';
 import { JobResults } from './components/JobResults';
 import { Analytics } from './components/Analytics';
-import { JobSearchAutomation } from './components/JobSearchAutomation';
+import JobSearchAutomation from './components/JobSearchAutomation';
+import Membership from './components/Membership';
+import { CancelSubscription } from './components/CancelSubscription';
+import { CheckoutSuccess } from './components/CheckoutSuccess';
+import { CheckoutCancel } from './components/CheckoutCancel';
 import { Toaster } from './components/ui/sonner';
 import { getUserData } from './functions/get_user_data';
 import { saveUserData } from './functions/save_user_data';
 import { UserCache } from './utils/userCache';
+import { getMembership } from './functions/get_membership';
+import type { MembershipStatus } from './utils/stripe';
 
-type Page = 'home' | 'demo' | 'profile' | 'search' | 'results' | 'analytics' | 'job-search';
+type Page = 'home' | 'demo' | 'profile' | 'search' | 'dashboard' | 'analytics' | 'job-search' | 'membership' | 'cancel-subscription' | 'checkout-success' | 'checkout-cancel';
 
 interface Job {
   id: string;
@@ -38,12 +44,28 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [membership, setMembership] = useState<MembershipStatus | null>(null);
 
   useEffect(() => {
+    // Check URL and set page from pathname
+    const path = window.location.pathname.replace('/', '') || 'home';
+    const validPages: Page[] = ['home', 'demo', 'profile', 'search', 'dashboard', 'analytics', 'job-search', 'membership', 'cancel-subscription', 'checkout-success', 'checkout-cancel'];
+    if (validPages.includes(path as Page)) {
+      setCurrentPage(path as Page);
+    }
+
+    // Handle browser back/forward buttons
+    const handlePopState = () => {
+      const path = window.location.pathname.replace('/', '') || 'home';
+      if (validPages.includes(path as Page)) {
+        setCurrentPage(path as Page);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      
       if (currentUser) {
         // Fetch user data when logged in and cache it
         try {
@@ -54,39 +76,44 @@ export default function App() {
               const profileData = typeof response.data.profile_data === 'string'
                 ? JSON.parse(response.data.profile_data)
                 : response.data.profile_data;
-              
               UserCache.set(currentUser.uid, 'profile', {
                 formData: profileData,
                 resumeUrl: response.data.resume_file_url
               });
             }
-            
             // Cache applications data
             const applicationsData = response.data.applications_txt || response.data.applications;
             if (applicationsData) {
               const applications = typeof applicationsData === 'string'
                 ? JSON.parse(applicationsData)
                 : applicationsData;
-              
               UserCache.set(currentUser.uid, 'applications', applications);
               setJobs(applications); // Set jobs state for immediate use
             }
           }
+          // Fetch membership status
+          const membershipRes = await getMembership(currentUser.uid);
+          if (membershipRes.success && membershipRes.data) {
+            setMembership(membershipRes.data);
+          } else {
+            setMembership(null);
+          }
         } catch (error) {
-          console.error('Error loading user data on login:', error);
+          console.error('Error loading user data or membership on login:', error);
         }
-        
         setShowLogin(false);
         // Auto-redirect logged-in users to dashboard if on home page
         if (currentPage === 'home') {
-          setCurrentPage('results');
+          setCurrentPage('dashboard');
         }
       }
-      
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [currentPage]);
 
   const handleLogin = () => {
@@ -97,6 +124,7 @@ export default function App() {
     try {
       await auth.signOut();
       setCurrentPage('home');
+      window.history.pushState({}, '', '/');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -104,19 +132,19 @@ export default function App() {
 
   const handleLoginSuccess = () => {
     setShowLogin(false);
-    setCurrentPage('results'); // Redirect to dashboard after login
+    setCurrentPage('dashboard'); // Redirect to dashboard after login
   };
 
   const handleGetStarted = () => {
     if (user) {
-      setCurrentPage('results'); // Logged-in users go to dashboard
+      setCurrentPage('dashboard'); // Logged-in users go to dashboard
     } else {
       setShowLogin(true);
     }
   };
 
   const handleSearch = (_searchParams: any) => {
-    setCurrentPage('results');
+    setCurrentPage('dashboard');
   };
 
   const handleJobApplied = (job: Job) => {
@@ -145,8 +173,14 @@ export default function App() {
           profileData = response.data.profile_data || {};
         }
         
+        // Add dateAdded timestamp to the job
+        const jobWithTimestamp = {
+          ...job,
+          dateAdded: new Date().toISOString()
+        };
+        
         // Add new job
-        const updatedJobs = [...currentJobs, job];
+        const updatedJobs = [...currentJobs, jobWithTimestamp];
         
         // Save to database - must include profile_data to avoid constraint violation
         await saveUserData({
@@ -169,8 +203,29 @@ export default function App() {
     }
   };
 
-  const handleNavigate = (page: string) => {
+  const handleNavigate = async (page: string) => {
     setCurrentPage(page as Page);
+    // Update URL without page reload
+    const path = page === 'home' ? '/' : `/${page}`;
+    window.history.pushState({}, '', path);
+    
+    // If navigating to membership or dashboard after checkout, refresh membership status
+    if ((page === 'membership' || page === 'dashboard') && user?.uid) {
+      await refreshMembershipStatus();
+    }
+  };
+
+  const refreshMembershipStatus = async () => {
+    if (!user?.uid) return;
+    
+    try {
+      const membershipRes = await getMembership(user.uid);
+      if (membershipRes.success && membershipRes.data) {
+        setMembership(membershipRes.data);
+      }
+    } catch (error) {
+      console.error('Error refreshing membership:', error);
+    }
   };
 
   const renderPage = () => {
@@ -183,12 +238,20 @@ export default function App() {
         return <MyProfile />;
       case 'search':
         return <JobSearch onSearch={handleSearch} />;
-      case 'results':
+      case 'dashboard':
         return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} onNavigate={handleNavigate} />;
       case 'analytics':
         return <Analytics jobs={jobs} setJobs={setJobs} />;
       case 'job-search':
-        return <JobSearchAutomation onAddJob={handleAddJobFromSearch} onBack={() => setCurrentPage('results')} />;
+        return <JobSearchAutomation onAddJob={handleAddJobFromSearch} onBack={() => setCurrentPage('dashboard')} isPro={!!membership?.isPro} />;
+      case 'membership':
+        return <Membership onNavigate={handleNavigate} membership={membership} />;
+      case 'cancel-subscription':
+        return <CancelSubscription onNavigate={handleNavigate} membership={membership} onRefreshMembership={refreshMembershipStatus} />;
+      case 'checkout-success':
+        return <CheckoutSuccess onNavigate={handleNavigate} onRefreshMembership={refreshMembershipStatus} />;
+      case 'checkout-cancel':
+        return <CheckoutCancel onNavigate={handleNavigate} />;
       default:
         return <HomePage onGetStarted={handleGetStarted} onNavigate={handleNavigate} />;
     }
@@ -213,7 +276,7 @@ export default function App() {
     <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
       <Navigation
         currentPage={currentPage}
-        onNavigate={(page) => setCurrentPage(page as Page)}
+        onNavigate={(page) => handleNavigate(page)}
         isLoggedIn={!!user}
         onLogin={handleLogin}
         onLogout={handleLogout}
