@@ -41,6 +41,7 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [addingJobs, setAddingJobs] = useState<Set<string>>(new Set());
 
   const handleSearch = async () => {
     if (!searchParams.title && !searchParams.location) {
@@ -128,9 +129,28 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
   };
 
   const handleAddJob = (apiJob: any) => {
+    const jobKey = apiJob.key || apiJob.jobUrl || Date.now().toString();
+    
+    // Prevent duplicate adds
+    if (addingJobs.has(jobKey)) {
+      return;
+    }
+    
+    // Mark job as being added
+    setAddingJobs(prev => new Set(prev).add(jobKey));
+    
     const parsedJob = parseJobFromAPI(apiJob);
     onAddJob(parsedJob);
     toast.success(`Added ${parsedJob.title} to your dashboard!`);
+    
+    // Remove from adding set after a short delay to allow for state updates
+    setTimeout(() => {
+      setAddingJobs(prev => {
+        const next = new Set(prev);
+        next.delete(jobKey);
+        return next;
+      });
+    }, 500);
   };
 
   return (
@@ -294,11 +314,12 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
                       <div className="flex flex-col gap-3 md:items-end">
                         <Button
                           onClick={() => handleAddJob(job)}
+                          disabled={addingJobs.has(job.key || job.jobUrl || '')}
                           className="text-white font-semibold rounded-xl"
                           style={{ backgroundColor: '#9E2B25' }}
                         >
                           <Plus className="mr-2 h-4 w-4" />
-                          Add to Dashboard
+                          {addingJobs.has(job.key || job.jobUrl || '') ? 'Adding...' : 'Add to Dashboard'}
                         </Button>
                         {parsed.url && (
                           <Button
