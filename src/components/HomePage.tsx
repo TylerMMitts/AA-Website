@@ -2,6 +2,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle2, Chrome, Zap, Target, TrendingUp, Sparkles, Award, Shield } from 'lucide-react';
 import logo from '../assets/logo.png';
+import showcase from '../assets/showcase.png';
 
 interface HomePageProps {
   onGetStarted: () => void;
@@ -50,7 +51,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid gap-12 lg:grid-cols-2 items-center max-w-7xl mx-auto">
             {/* Left: Hero Content */}
-            <div className="space-y-8">
+            <div className="space-y-8" style={{ marginTop: '-22rem', fontSize: '1.35em', lineHeight: 1.25 }}>
               <style>
                 {`@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');`}
               </style>
@@ -102,54 +103,13 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
             </div>
 
             {/* Right: Visual Mockup */}
-            <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4" style={{ borderColor: '#51355A' }}>
-                <div className="bg-white p-8 aspect-[4/3]">
-                  {/* Dashboard Mockup */}
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="h-8 w-32 rounded-lg" style={{ backgroundColor: '#51355A' }}></div>
-                      <div className="h-8 w-8 rounded-full" style={{ backgroundColor: '#9E2B25' }}></div>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="rounded-xl p-4 space-y-2" style={{ backgroundColor: '#FFF8F0' }}>
-                          <div className="h-10 w-10 rounded-lg" style={{ backgroundColor: i === 2 ? '#9E2B25' : '#51355A' }}></div>
-                          <div className="h-3 w-16 rounded" style={{ backgroundColor: '#51355A', opacity: 0.3 }}></div>
-                          <div className="h-5 w-12 rounded" style={{ backgroundColor: '#51355A' }}></div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-3">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="rounded-xl p-4 flex items-center gap-4" style={{ backgroundColor: '#FFF8F0' }}>
-                          <div className="h-12 w-12 rounded-lg" style={{ backgroundColor: '#51355A', opacity: 0.7 }}></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-3 rounded" style={{ backgroundColor: '#51355A', opacity: 0.4, width: '70%' }}></div>
-                            <div className="h-2 rounded" style={{ backgroundColor: '#51355A', opacity: 0.2, width: '50%' }}></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating Badge */}
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-5 shadow-2xl border-2 animate-float hidden lg:block" 
-                   style={{ borderColor: '#9E2B25' }}>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#9E2B25' }}>
-                    <CheckCircle2 className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: '#51355A' }}>Applications This Week</p>
-                    <p className="text-2xl font-bold" style={{ color: '#9E2B25' }}>47</p>
-                  </div>
-                </div>
-              </div>
+            <div className="relative flex items-center justify-center">
+              <img 
+                src={showcase}
+                alt="Dashboard Showcase" 
+                className="rounded-3xl shadow-2xl border-4" 
+                style={{ borderColor: '#51355A', maxWidth: '100%', height: 'auto', background: '#fff' }}
+              />
             </div>
           </div>
         </div>
@@ -172,7 +132,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
             <Card className="rounded-3xl border-2 overflow-hidden hover:shadow-xl transition-shadow" style={{ borderColor: '#51355A' }}>
               <CardHeader className="space-y-4 pb-8" style={{ backgroundColor: '#FFF8F0' }}>
                 <div className="space-y-2">
-                  <CardTitle className="text-3xl" style={{ color: '#51355A' }}>Free</CardTitle>
+                  <CardTitle className="text-3xl" style={{ color: '#51355A', fontWeight: 'bold' }}>Free</CardTitle>
                   <CardDescription className="text-base" style={{ color: '#51355A', opacity: 0.7 }}>
                     Perfect for getting started
                   </CardDescription>
@@ -219,7 +179,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
               
               <CardHeader className="space-y-4 pb-8" style={{ backgroundColor: '#51355A' }}>
                 <div className="space-y-2">
-                  <CardTitle className="text-3xl text-white">Pro</CardTitle>
+                  <CardTitle className="text-3xl text-white" style={{ fontWeight: 'bold' }}>Pro</CardTitle>
                   <CardDescription className="text-base text-white opacity-90">
                     Everything you need to succeed
                   </CardDescription>
@@ -332,60 +292,12 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-24 relative overflow-hidden" style={{ backgroundColor: '#2A0C4E' }}>
-        {/* Subtle Pattern Overlay */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ 
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '30px 30px'
-          }}></div>
-        </div>
-
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
-              Ready to land your dream job?
-            </h2>
-            <p className="text-xl md:text-2xl" style={{ color: '#FFF8F0', opacity: 0.9 }}>
-              Join thousands who've automated their job search and saved hundreds of hours.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button 
-                onClick={onGetStarted}
-                size="lg"
-                className="text-lg px-10 py-7 rounded-2xl font-semibold shadow-2xl hover:shadow-3xl transition-all text-white"
-                style={{ backgroundColor: '#9E2B25' }}
-              >
-                Start Free Today
-              </Button>
-              <Button 
-                onClick={() => onNavigate('demo')}
-                size="lg"
-                variant="outline"
-                className="text-lg px-10 py-7 rounded-2xl font-semibold border-2 text-white hover:bg-white/10"
-                style={{ borderColor: '#FFF8F0' }}
-              >
-                See How It Works
-              </Button>
-            </div>
-            
-            {/* Trust Signals */}
-            <div className="flex items-center justify-center gap-8 pt-8 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5" style={{ color: '#FFF8F0' }} />
-                <span className="text-sm" style={{ color: '#FFF8F0' }}>Secure & Private</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" style={{ color: '#FFF8F0' }} />
-                <span className="text-sm" style={{ color: '#FFF8F0' }}>95% Success Rate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5" style={{ color: '#FFF8F0' }} />
-                <span className="text-sm" style={{ color: '#FFF8F0' }}>Rated 4.9/5</span>
-              </div>
-            </div>
-          </div>
+      {/* Final CTA - replaced with small footer */}
+      <section className="py-4" style={{ backgroundColor: '#2A0C4E' }}>
+        <div className="container mx-auto px-4 text-center">
+          <span style={{ color: '#FFF8F0', fontSize: '1.25rem', fontWeight: 600 }}>
+            Mitts Technology LLC
+          </span>
         </div>
       </section>
     </div>
