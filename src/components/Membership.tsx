@@ -84,15 +84,6 @@ export default function Membership({ onNavigate, membership: membershipProp }: M
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => onNavigate('dashboard')}
-            className="mb-4"
-            style={{ color: '#51355A' }}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
           <h1 className="text-4xl font-bold mb-2" style={{ color: '#2A0C4E' }}>
             Membership
           </h1>
