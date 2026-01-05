@@ -39,10 +39,6 @@ export function MyProfile() {
     willingToRelocate: false,
     relocationDistance: '',
     
-    // Company Relations
-    relativesEmployed: false,
-    formerEmployee: false,
-    
     // Professional Information
     expectedIncome: '',
     workExperiences: [] as Array<{
@@ -405,7 +401,7 @@ export function MyProfile() {
                   id="middleName"
                   value={formData.middleName}
                   onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
-                  placeholder="A."
+                  placeholder="Smith"
                 />
               </div>
               <div className="space-y-2">
@@ -950,30 +946,7 @@ export function MyProfile() {
           </CardContent>
         </Card>
 
-        {/* Cover Letter Templates */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Cover Letter Template</CardTitle>
-            <CardDescription>
-              Create a default cover letter that will be customized for each application
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="coverLetter">Default Cover Letter</Label>
-              <Textarea
-                id="coverLetter"
-                value={formData.defaultCoverLetter}
-                onChange={(e) => setFormData({ ...formData, defaultCoverLetter: e.target.value })}
-                placeholder="Dear Hiring Manager,&#10;&#10;I am writing to express my interest in the [Position] role at [Company]...&#10;&#10;Use [Position] and [Company] as placeholders that will be auto-filled."
-                rows={8}
-              />
-            </div>
-            <p className="text-gray-600">
-              Tip: Use [Position] and [Company] as placeholders that will be automatically replaced
-            </p>
-          </CardContent>
-        </Card>
+
 
         {/* Demographics & EEO Information */}
         <Card>
@@ -1137,33 +1110,7 @@ export function MyProfile() {
               )}
             </div>
 
-            <div className="pt-4 border-t space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="relativesEmployed"
-                  checked={formData.relativesEmployed}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, relativesEmployed: checked as boolean })
-                  }
-                />
-                <Label htmlFor="relativesEmployed" className="cursor-pointer font-normal">
-                  I have relatives currently employed at companies I'm applying to
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="formerEmployee"
-                  checked={formData.formerEmployee}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, formerEmployee: checked as boolean })
-                  }
-                />
-                <Label htmlFor="formerEmployee" className="cursor-pointer font-normal">
-                  I am a former employee of companies I'm applying to
-                </Label>
-              </div>
-            </div>
+            {/* Removed relativesEmployed and formerEmployee checkboxes */}
           </CardContent>
         </Card>
 
