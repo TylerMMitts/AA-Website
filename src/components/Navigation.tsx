@@ -14,11 +14,12 @@ interface NavigationProps {
   onNavigate: (page: string) => void;
   isLoggedIn: boolean;
   onLogin: () => void;
+  onSignup: () => void;
   onLogout: () => void;
   user?: any;
 }
 
-export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLogout, user }: NavigationProps) {
+export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSignup, onLogout, user }: NavigationProps) {
   const getUserInitials = () => {
     const name = user?.profile?.name || user?.profile?.given_name || user?.profile?.preferred_username;
     if (name) {
@@ -194,7 +195,7 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onLog
                     Log In
                   </Button>
                   <Button
-                    onClick={onLogin}
+                    onClick={onSignup}
                     className="font-semibold rounded-xl shadow-md hover:shadow-lg transition-shadow text-white"
                     style={{ backgroundColor: '#9E2B25' }}
                   >

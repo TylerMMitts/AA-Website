@@ -18,6 +18,7 @@ export function MyProfile() {
   const [formData, setFormData] = useState({
     // Personal Information
     firstName: '',
+    middleName: '',
     lastName: '',
     preferredName: '',
     email: '',
@@ -388,7 +389,7 @@ export function MyProfile() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name *</Label>
                 <Input
@@ -396,6 +397,15 @@ export function MyProfile() {
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   placeholder="John"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="middleName">Middle Name</Label>
+                <Input
+                  id="middleName"
+                  value={formData.middleName}
+                  onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+                  placeholder="A."
                 />
               </div>
               <div className="space-y-2">

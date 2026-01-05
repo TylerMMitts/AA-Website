@@ -4,7 +4,6 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseLogin } from './components/FirebaseLogin';
 import { Navigation } from './components/Navigation';
 import { HomePage } from './components/HomePage';
-import { DemoPage } from './components/DemoPage';
 import { MyProfile } from './components/MyProfile';
 import { JobSearch } from './components/JobSearch';
 import { JobResults } from './components/JobResults';
@@ -14,6 +13,7 @@ import Membership from './components/Membership';
 import { CancelSubscription } from './components/CancelSubscription';
 import { CheckoutSuccess } from './components/CheckoutSuccess';
 import { CheckoutCancel } from './components/CheckoutCancel';
+import { Privacy } from './components/Privacy';
 import { Toaster } from './components/ui/sonner';
 import { getUserData } from './functions/get_user_data';
 import { saveUserData } from './functions/save_user_data';
@@ -21,7 +21,7 @@ import { UserCache } from './utils/userCache';
 import { getMembership } from './functions/get_membership';
 import type { MembershipStatus } from './utils/stripe';
 
-type Page = 'home' | 'demo' | 'login' | 'profile' | 'search' | 'dashboard' | 'analytics' | 'job-search' | 'membership' | 'cancel-subscription' | 'checkout-success' | 'checkout-cancel';
+type Page = 'home' | 'login' | 'signup' | 'profile' | 'search' | 'dashboard' | 'analytics' | 'job-search' | 'membership' | 'cancel-subscription' | 'checkout-success' | 'checkout-cancel' | 'privacy';
 
 interface Job {
   id: string;
@@ -48,7 +48,7 @@ export default function App() {
   useEffect(() => {
     // Check URL and set page from pathname
     const path = window.location.pathname.replace('/', '') || 'home';
-    const validPages: Page[] = ['home', 'demo', 'login', 'profile', 'search', 'dashboard', 'analytics', 'job-search', 'membership', 'cancel-subscription', 'checkout-success', 'checkout-cancel'];
+    const validPages: Page[] = ['home', 'login', 'signup', 'profile', 'search', 'dashboard', 'analytics', 'job-search', 'membership', 'cancel-subscription', 'checkout-success', 'checkout-cancel', 'privacy'];
     if (validPages.includes(path as Page)) {
       setCurrentPage(path as Page);
     }
@@ -124,6 +124,10 @@ export default function App() {
     handleNavigate('login');
   };
 
+  const handleSignup = () => {
+    handleNavigate('signup');
+  };
+
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -142,7 +146,7 @@ export default function App() {
     if (user) {
       handleNavigate('dashboard'); // Logged-in users go to dashboard
     } else {
-      handleNavigate('login');
+      handleNavigate('signup'); // New users should sign up
     }
   };
 
@@ -235,10 +239,10 @@ export default function App() {
     switch (currentPage) {
       case 'home':
         return <HomePage onGetStarted={handleGetStarted} onNavigate={handleNavigate} />;
-      case 'demo':
-        return <DemoPage onGetStarted={handleGetStarted} />;
       case 'login':
-        return <FirebaseLogin onLoginSuccess={handleLoginSuccess} onClose={() => handleNavigate('home')} />;
+        return <FirebaseLogin mode="login" onLoginSuccess={handleLoginSuccess} onClose={() => handleNavigate('home')} />;
+      case 'signup':
+        return <FirebaseLogin mode="signup" onLoginSuccess={handleLoginSuccess} onClose={() => handleNavigate('home')} />;
       case 'profile':
         return <MyProfile />;
       case 'search':
@@ -257,6 +261,8 @@ export default function App() {
         return <CheckoutSuccess onNavigate={handleNavigate} onRefreshMembership={refreshMembershipStatus} />;
       case 'checkout-cancel':
         return <CheckoutCancel onNavigate={handleNavigate} />;
+      case 'privacy':
+        return <Privacy />;
       default:
         return <HomePage onGetStarted={handleGetStarted} onNavigate={handleNavigate} />;
     }
@@ -280,6 +286,7 @@ export default function App() {
         onNavigate={(page) => handleNavigate(page)}
         isLoggedIn={!!user}
         onLogin={handleLogin}
+        onSignup={handleSignup}
         onLogout={handleLogout}
         user={user ? {
           profile: {

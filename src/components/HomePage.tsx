@@ -78,15 +78,6 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                 >
                   Get Started Free
                 </Button>
-                <Button 
-                  onClick={() => onNavigate('demo')}
-                  size="lg"
-                  variant="outline"
-                  className="text-lg px-8 py-6 rounded-2xl font-semibold border-2"
-                  style={{ borderColor: '#51355A', color: '#51355A' }}
-                >
-                  Watch Demo
-                </Button>
               </div>
 
               {/* Extension CTA */}
@@ -294,10 +285,20 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
 
       {/* Final CTA - replaced with small footer */}
       <section className="py-4" style={{ backgroundColor: '#2A0C4E' }}>
-        <div className="container mx-auto px-4 text-center">
+        <div className="container mx-auto px-4 text-center space-y-2">
           <span style={{ color: '#FFF8F0', fontSize: '1.25rem', fontWeight: 600 }}>
             Mitts Technology LLC
           </span>
+          <div>
+            <Button
+              onClick={() => onNavigate?.('privacy')}
+              variant="link"
+              className="text-sm"
+              style={{ color: '#FFF8F0' }}
+            >
+              Privacy
+            </Button>
+          </div>
         </div>
       </section>
     </div>
