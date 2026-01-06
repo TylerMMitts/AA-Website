@@ -39,9 +39,12 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
     datePosted: '7'
   });
   const [results, setResults] = useState<any[]>([]);
+  const [totalDisplayed, setTotalDisplayed] = useState(20);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [addingJobs, setAddingJobs] = useState<Set<string>>(new Set());
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
 
   const handleSearch = async () => {
     if (!searchParams.title && !searchParams.location) {
@@ -51,9 +54,10 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
 
     setIsSearching(true);
     setHasSearched(true);
+    setTotalDisplayed(20);
     
     try {
-      const jobs = await searchJobs(searchParams);
+      const jobs = await searchJobs({ ...searchParams, limit: 100 });
       setResults(jobs || []);
       
       if (!jobs || jobs.length === 0) {
@@ -68,6 +72,22 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleLoadMore = () => {
+    setTotalDisplayed(prev => prev + 20);
+  };
+
+  const toggleDescription = (jobKey: string) => {
+    setExpandedDescriptions(prev => {
+      const next = new Set(prev);
+      if (next.has(jobKey)) {
+        next.delete(jobKey);
+      } else {
+        next.add(jobKey);
+      }
+      return next;
+    });
   };
 
   const parseJobFromAPI = (apiJob: any): Job => {
@@ -122,7 +142,7 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
       level,
       remote,
       url: apiJob.jobUrl || apiJob.url,
-      description: (apiJob.description?.text || '').substring(0, 500),
+      description: apiJob.description?.text || '',
       postedDate,
       status: 'not applied'
     };
@@ -194,32 +214,7 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
                 />
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="limit" style={{ color: '#51355A' }}>Number of Results</Label>
-                <Input
-                  id="limit"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={searchParams.limit}
-                  onChange={(e) => setSearchParams({ ...searchParams, limit: parseInt(e.target.value) || 20 })}
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="datePosted" style={{ color: '#51355A' }}>Posted Within (days)</Label>
-                <Input
-                  id="datePosted"
-                  type="number"
-                  min="1"
-                  max="30"
-                  value={searchParams.datePosted}
-                  onChange={(e) => setSearchParams({ ...searchParams, datePosted: e.target.value })}
-                  className="rounded-xl"
-                />
-              </div>
-            </div>
+
             <Button
               onClick={handleSearch}
               disabled={isSearching || !isPro}
@@ -268,7 +263,7 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
             <h2 className="text-2xl font-bold mb-4" style={{ color: '#2A0C4E' }}>
               {results.length} Jobs Found
             </h2>
-            {results.map((job) => {
+            {results.slice(0, totalDisplayed).map((job) => {
               const parsed = parseJobFromAPI(job);
               return (
                 <Card key={job.key} className="hover:shadow-lg transition-shadow rounded-2xl border-2" style={{ borderColor: '#51355A' }}>
@@ -306,9 +301,26 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
                           )}
                         </div>
                         {parsed.description && (
-                          <p className="text-sm line-clamp-3" style={{ color: '#51355A' }}>
-                            {parsed.description}
-                          </p>
+                          <div className="space-y-2">
+                            <p className="text-sm whitespace-pre-wrap" style={{ color: '#51355A' }}>
+                              {expandedDescriptions.has(job.key) 
+                                ? parsed.description 
+                                : parsed.description.length > 500 
+                                  ? parsed.description.substring(0, 500) + '...' 
+                                  : parsed.description}
+                            </p>
+                            {parsed.description.length > 500 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleDescription(job.key)}
+                                className="text-sm font-medium p-0 h-auto"
+                                style={{ color: '#9E2B25' }}
+                              >
+                                {expandedDescriptions.has(job.key) ? 'Show Less' : 'Read More'}
+                              </Button>
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="flex flex-col gap-3 md:items-end">
@@ -341,6 +353,26 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
                 </Card>
               );
             })}
+            {totalDisplayed < results.length && (
+              <div className="flex justify-center mt-8">
+                <Button
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="text-white font-semibold rounded-xl px-8 py-6"
+                  style={{ backgroundColor: '#51355A' }}
+                  size="lg"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    `Load More Jobs (${Math.min(20, results.length - totalDisplayed)} more)`
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
