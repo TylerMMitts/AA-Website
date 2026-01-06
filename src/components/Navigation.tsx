@@ -62,7 +62,7 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
             >
               <div
                 className="flex justify-between items-center px-32 py-3 rounded-full shadow-lg border border-[#E5E0F0] mx-auto w-full transition-all duration-300"
-                style={{ minHeight: 60, backgroundColor: '#51355a', width: '32em', maxWidth: 600, paddingLeft: 48, paddingRight: 48 }}
+                style={{ minHeight: 60, backgroundColor: '#51355a', width: '42em', maxWidth: 800, paddingLeft: 48, paddingRight: 48 }}
               >
                 <button
                   onClick={() => onNavigate('dashboard')}
@@ -85,6 +85,17 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                   style={{ letterSpacing: 2 }}
                 >
                   Analytics
+                </button>
+                <button
+                  onClick={() => onNavigate('membership')}
+                  className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
+                    currentPage === 'membership'
+                      ? '!bg-[#51355A] !text-white !shadow-xl'
+                      : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
+                  }`}
+                  style={{ letterSpacing: 2 }}
+                >
+                  Membership
                 </button>
                 <button
                   onClick={() => onNavigate('profile')}
