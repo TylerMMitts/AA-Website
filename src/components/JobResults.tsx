@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { saveUserData } from '../functions/save_user_data';
 import { getUserData } from '../functions/get_user_data';
 import { UserCache } from '../utils/userCache';
+import { rateLimiter, RATE_LIMITS } from '../utils/rateLimiter';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -124,6 +125,15 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
       if (JSON.stringify(jobs) === JSON.stringify(initialJobsRef.current)) return;
 
       console.log('Saving applications - jobs changed from initial load');
+
+      // Rate limit check
+      const rateLimitKey = `${user.uid}:save-applications`;
+      const rateLimitResult = rateLimiter.check(rateLimitKey, RATE_LIMITS.SAVE_APPLICATIONS);
+      
+      if (!rateLimitResult.allowed) {
+        toast.error(rateLimitResult.message || 'Please wait before saving again');
+        return;
+      }
 
       setIsSaving(true);
       try {
@@ -365,6 +375,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
                 </div>
               ))}
             </div>
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button 

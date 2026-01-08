@@ -2,6 +2,8 @@
  * Generate custom resume and cover letter using AWS Bedrock
  */
 
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '../utils/rateLimiter';
+
 const BEDROCK_GENERATE_URL = import.meta.env.VITE_BEDROCK_GENERATE_URL || 'http://localhost:5001/generate-documents';
 
 export interface GenerateDocumentsRequest {
@@ -31,6 +33,24 @@ export interface GenerateDocumentsResponse {
  * Generate a custom resume or cover letter for a specific job
  */
 export async function generateDocument(request: GenerateDocumentsRequest): Promise<GenerateDocumentsResponse> {
+  // Rate limiting check - different limits for resume vs cover letter
+  const endpoint = request.document_type === 'resume' ? 'document-generation-resume' : 'document-generation-cover-letter';
+  const rateLimitKey = getRateLimitKey(request.user_id, endpoint);
+  const rateLimitConfig = request.document_type === 'resume' 
+    ? RATE_LIMITS.DOCUMENT_GENERATION_RESUME 
+    : RATE_LIMITS.DOCUMENT_GENERATION_COVER_LETTER;
+  const rateLimitResult = checkRateLimit(rateLimitKey, rateLimitConfig);
+
+  if (!rateLimitResult.allowed) {
+    return {
+      success: false,
+      error: rateLimitResult.message || 'Rate limit exceeded',
+    };
+  }
+
+  // Log remaining requests for debugging
+  console.log(`${request.document_type} generation rate limit: ${rateLimitResult.remaining} requests remaining`);
+
   try {
     const response = await fetch(BEDROCK_GENERATE_URL, {
       method: 'POST',
@@ -60,7 +80,8 @@ export async function generateDocument(request: GenerateDocumentsRequest): Promi
   }
 }
 
-/**file
+/**
+ * Download a generated document (PDF or Markdown)
  */
 export function downloadDocument(content: string, filename: string, format: 'pdf' | 'markdown' = 'pdf') {
   if (format === 'pdf') {
@@ -91,6 +112,5 @@ export function downloadDocument(content: string, filename: string, format: 'pdf
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }(link);
-  URL.revokeObjectURL(url);
+  }
 }

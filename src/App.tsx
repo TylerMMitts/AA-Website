@@ -250,9 +250,9 @@ export default function App() {
       case 'dashboard':
         return <JobResults onJobApplied={handleJobApplied} jobs={jobs} setJobs={setJobs} user={user} onNavigate={handleNavigate} membership={membership} />;
       case 'analytics':
-        return <Analytics jobs={jobs} setJobs={setJobs} />;
+        return <Analytics jobs={jobs} setJobs={setJobs} user={user} />;
       case 'job-search':
-        return <JobSearchAutomation onAddJob={handleAddJobFromSearch} onBack={() => setCurrentPage('dashboard')} isPro={!!membership?.isPro} />;
+        return <JobSearchAutomation onAddJob={handleAddJobFromSearch} onBack={() => setCurrentPage('dashboard')} isPro={!!membership?.isPro} user={user} />;
       case 'membership':
         return <Membership onNavigate={handleNavigate} membership={membership} />;
       case 'cancel-subscription':

@@ -14,6 +14,12 @@ import {
   TrendingUp 
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { saveUserData } from '../functions/save_user_data';
+import { getUserData } from '../functions/get_user_data';
+import { UserCache } from '../utils/userCache';
+import { rateLimiter, RATE_LIMITS } from '../utils/rateLimiter';
+import { toast } from 'sonner';
+import { User } from 'firebase/auth';
 
 
 interface Job {
@@ -37,9 +43,10 @@ interface Job {
 interface AnalyticsProps {
   jobs: Job[];
   setJobs: Dispatch<SetStateAction<Job[]>>;
+  user: User | null;
 }
 
-export function Analytics({ jobs, setJobs }: AnalyticsProps) {
+export function Analytics({ jobs, setJobs, user }: AnalyticsProps) {
   
   // Generate chart data from actual job applications
   const generateChartData = () => {
@@ -114,10 +121,59 @@ export function Analytics({ jobs, setJobs }: AnalyticsProps) {
     rejected: jobs.filter(j => j.status === 'rejected').length,
   };
 
-  const handleStatusChange = (jobId: string, newStatus: string) => {
-    setJobs(jobs.map(job => 
+  const handleStatusChange = async (jobId: string, newStatus: string) => {
+    if (!user?.uid) {
+      toast.error('You must be logged in to update job status');
+      return;
+    }
+
+    // Rate limit check
+    const rateLimitKey = `${user.uid}:status-change`;
+    const rateLimitResult = rateLimiter.check(rateLimitKey, RATE_LIMITS.STATUS_CHANGE);
+    
+    if (!rateLimitResult.allowed) {
+      toast.error(rateLimitResult.message || 'Please wait before changing status again');
+      return;
+    }
+
+    // Update local state immediately for responsiveness
+    const updatedJobs = jobs.map(job => 
       job.id === jobId ? { ...job, status: newStatus as Job['status'] } : job
-    ));
+    );
+    setJobs(updatedJobs);
+
+    try {
+      // Save to database
+      const applicationsJson = JSON.stringify(updatedJobs);
+      
+      // Fetch current user data to get existing profile_data
+      const currentData = await getUserData(user.uid);
+      let existingProfile = {};
+      
+      if (currentData.success && currentData.data?.profile_data) {
+        existingProfile = typeof currentData.data.profile_data === 'string' 
+          ? JSON.parse(currentData.data.profile_data)
+          : currentData.data.profile_data;
+      }
+      
+      // Save with existing profile to satisfy NOT NULL constraint
+      await saveUserData({
+        user_id: user.uid,
+        profile: existingProfile,
+        applications_txt: applicationsJson
+      });
+      
+      // Update cache
+      UserCache.set(user.uid, 'applications', updatedJobs);
+      
+      toast.success('Job status updated successfully!');
+    } catch (error) {
+      console.error('Error saving status change:', error);
+      toast.error('Failed to save status change');
+      
+      // Revert the local state change on error
+      setJobs(jobs);
+    }
   };
 
   const getStatusColor = (status: string) => {

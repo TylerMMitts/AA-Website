@@ -12,6 +12,7 @@ import { auth } from './firebase';
 import { saveUserData } from '../functions/save_user_data';
 import { getUserData } from '../functions/get_user_data';
 import { UserCache } from '../utils/userCache';
+import { rateLimiter, RATE_LIMITS } from '../utils/rateLimiter';
 
 // Main component for user profile management
 export function MyProfile() {
@@ -262,6 +263,15 @@ export function MyProfile() {
     // Validates required fields
     if (!formData.firstName || !formData.lastName || !formData.email) {
       toast.error('Please fill in all required fields (First Name, Last Name, Email)');
+      return;
+    }
+
+    // Rate limit check
+    const rateLimitKey = `${currentUser.uid}:save-profile`;
+    const rateLimitResult = rateLimiter.check(rateLimitKey, RATE_LIMITS.SAVE_PROFILE);
+    
+    if (!rateLimitResult.allowed) {
+      toast.error(rateLimitResult.message || 'Please wait before saving again');
       return;
     }
 

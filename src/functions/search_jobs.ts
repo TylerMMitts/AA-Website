@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { JobSearchCache } from '../utils/jobSearchCache';
+import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from '../utils/rateLimiter';
 
 export interface JobListingInput {
   country?: string;
@@ -7,16 +8,33 @@ export interface JobListingInput {
   location?: string;
   limit?: number;
   datePosted?: string;
+  userId?: string; // Add userId for rate limiting
+  isPro?: boolean; // Add isPro flag for different limits
 }
 
 // TODO: Replace with your actual API Gateway URL after deploying the Lambda function
 const API_ENDPOINT = import.meta.env.VITE_SEARCH_JOBS_API_URL || 'MOCK';
 
 export async function searchJobs(input: JobListingInput): Promise<any[]> {
-  // Check cache first
+  // Check cache first (cached results don't count against rate limit)
   const cached = JobSearchCache.get(input);
   if (cached) {
+    console.log('Returning cached job search results');
     return cached;
+  }
+
+  // Only check rate limit if NOT using cache (actual API call)
+  if (input.userId) {
+    const rateLimitKey = getRateLimitKey(input.userId, 'job-search');
+    const limit = input.isPro ? RATE_LIMITS.JOB_SEARCH_PRO : RATE_LIMITS.JOB_SEARCH_FREE;
+    const rateLimitResult = checkRateLimit(rateLimitKey, limit);
+
+    if (!rateLimitResult.allowed) {
+      throw new Error(rateLimitResult.message || 'Rate limit exceeded');
+    }
+
+    // Log remaining requests for debugging
+    console.log(`Job search rate limit: ${rateLimitResult.remaining} requests remaining`);
   }
 
   // TEMPORARY: Mock data for testing UI (remove after Lambda deployment)

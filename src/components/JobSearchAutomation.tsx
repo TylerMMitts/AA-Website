@@ -28,15 +28,18 @@ interface JobSearchAutomationProps {
   onAddJob: (job: Job) => void;
   onBack: () => void;
   isPro?: boolean;
+  user?: any; // Add user for rate limiting
 }
 
-export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSearchAutomationProps) {
+export default function JobSearchAutomation({ onAddJob, onBack, isPro, user }: JobSearchAutomationProps) {
   const [searchParams, setSearchParams] = useState<JobListingInput>({
     country: 'us',
     title: '',
     location: '',
     limit: 20,
-    datePosted: '7'
+    datePosted: '7',
+    userId: user?.uid, // Add userId for rate limiting
+    isPro: isPro // Add isPro flag for different limits
   });
   const [results, setResults] = useState<any[]>([]);
   const [totalDisplayed, setTotalDisplayed] = useState(20);
@@ -57,7 +60,12 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
     setTotalDisplayed(20);
     
     try {
-      const jobs = await searchJobs({ ...searchParams, limit: 100 });
+      const jobs = await searchJobs({ 
+        ...searchParams, 
+        limit: 100, 
+        userId: user?.uid, 
+        isPro: isPro 
+      });
       setResults(jobs || []);
       
       if (!jobs || jobs.length === 0) {
@@ -65,9 +73,15 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro }: JobSear
       } else {
         toast.success(`Found ${jobs.length} job postings`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching jobs:', error);
-      toast.error('Failed to fetch jobs. Please try again.');
+      // Check if it's a rate limit error
+      const errorMessage = error?.message || 'Failed to fetch jobs. Please try again.';
+      if (errorMessage.includes('Rate limit') || errorMessage.includes('limit reached')) {
+        toast.error(errorMessage, { duration: 5000 });
+      } else {
+        toast.error(errorMessage);
+      }
       setResults([]);
     } finally {
       setIsSearching(false);
