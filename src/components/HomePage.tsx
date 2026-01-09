@@ -2,7 +2,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { CheckCircle2, Chrome, Zap, Target, TrendingUp, Sparkles, Award, Shield } from 'lucide-react';
 import logo from '../assets/logo.png';
-import showcase from '../assets/showcase.png';
+import showcaseVideo from '../assets/applyapplydemo.mp4';
 
 interface HomePageProps {
   onGetStarted: () => void;
@@ -38,9 +38,9 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
         </div>
 
         {/* Logo and Hero Title at the very top */}
-        <div className="w-full flex flex-col items-center z-20 relative pt-8 space-y-6">
+        <div className="w-full flex flex-col items-center z-20 relative pt-8 space-y-6" style={{ marginBottom: '14rem', marginTop: '-4rem' }}>
           <img src={logo} alt="ApplyApply Logo" style={{ height: '8em', width: 'auto' }} />
-          <h2 className="text-3xl md:text-4xl font-medium mt-0 mb-4" style={{ color: '#2A0C4E', fontStyle: 'italic', fontFamily: 'Inter', fontSize: '2.5em' }}>
+          <h2 className="text-3xl md:text-4xl font-medium mt-0 mb-4" style={{ color: '#2A0C4E', fontStyle: 'italic', fontFamily: 'Inter', fontSize: '2.5em', marginTop: '-2rem' }}>
             Make applying for jobs{' '}
             <span style={{ fontFamily: 'Great Vibes, cursive', fontStyle: 'italic', color: '#9E2B25', fontSize: '2.5em' }}>
               effortless
@@ -84,7 +84,12 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
               <div className="flex items-center gap-3 pt-4">
                 <Chrome className="h-6 w-6" style={{ color: '#51355A' }} />
                 <a 
-                  href="#extension" 
+                  href="https://chromewebstore.google.com/detail/mkgkcelaeaehnhoobgnpmhaoeonhlegf?utm_source=item-share-cb" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  href="https://chromewebstore.google.com/detail/mkgkcelaeaehnhoobgnpmhaoeonhlegf?utm_source=item-share-cb" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
                   className="text-lg font-medium hover:underline"
                   style={{ color: '#51355A' }}
                 >
@@ -93,13 +98,16 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
               </div>
             </div>
 
-            {/* Right: Visual Mockup */}
+            {/* Right: Video demo*/}
             <div className="relative flex items-center justify-center">
-              <img 
-                src={showcase}
-                alt="Dashboard Showcase" 
-                className="rounded-3xl shadow-2xl border-4" 
-                style={{ borderColor: '#51355A', maxWidth: '100%', height: 'auto', background: '#fff' }}
+              <video 
+                src={showcaseVideo}
+                className="rounded-3xl" 
+                style={{ borderColor: '#51355A', borderStyle: 'solid', borderWidth: '3px', maxWidth: '100%', height: 'auto', background: '#fff', transform: 'translateY(-10em)' }}
+                autoPlay
+                loop
+                muted
+                playsInline
               />
             </div>
           </div>
@@ -176,7 +184,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                   </CardDescription>
                 </div>
                 <div>
-                  <span className="text-5xl font-bold text-white">$29</span>
+                  <span className="text-5xl font-bold text-white">$20</span>
                   <span className="text-xl ml-2 text-white opacity-90">/month</span>
                 </div>
               </CardHeader>
@@ -207,10 +215,6 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 mt-0-5 flex-shrink-0" style={{ color: '#9E2B25' }} />
                     <span className="text-lg" style={{ color: '#51355A' }}>Unlimited applications</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-6 w-6 mt-0.5 flex-shrink-0" style={{ color: '#9E2B25' }} />
-                    <span className="text-lg" style={{ color: '#51355A' }}>Priority support</span>
                   </div>
                 </div>
               </CardContent>
