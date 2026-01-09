@@ -66,7 +66,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
               </h1>
               
               <p className="text-xl md:text-2xl leading-relaxed" style={{ color: '#51355A' }}>
-                ApplyApply automates job applications so you can focus on what matters—preparing for interviews.
+                ApplyApply is the all-in-one job application platform that automates your job search, enhancing your chances of landing interviews with custom AI resumes and cover letters.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
@@ -103,7 +103,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
               <video 
                 src={showcaseVideo}
                 className="rounded-3xl" 
-                style={{ borderColor: '#51355A', borderStyle: 'solid', borderWidth: '3px', maxWidth: '100%', height: 'auto', background: '#fff', transform: 'translateY(-10em)' }}
+                style={{ borderColor: '#51355A', borderStyle: 'solid', borderWidth: '3px', maxWidth: '100%', height: 'auto', background: '#fff', transform: 'translateY(-11em)' }}
                 autoPlay
                 loop
                 muted
@@ -277,9 +277,9 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                 <Zap className="h-10 w-10 text-white" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold" style={{ color: '#2A0C4E' }}>3. Watch It Work</h3>
+                <h3 className="text-2xl font-bold" style={{ color: '#2A0C4E' }}>3. Apply</h3>
                 <p className="text-lg" style={{ color: '#51355A' }}>
-                  Sit back as ApplyApply finds and applies to jobs 24/7.
+                  Add jobs to your dashboard and let ApplyApply expedite the process.
                 </p>
               </div>
             </div>
