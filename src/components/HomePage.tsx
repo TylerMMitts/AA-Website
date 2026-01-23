@@ -184,7 +184,7 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
                   </CardDescription>
                 </div>
                 <div>
-                  <span className="text-5xl font-bold text-white">$20</span>
+                  <span className="text-5xl font-bold text-white">$25</span>
                   <span className="text-xl ml-2 text-white opacity-90">/month</span>
                 </div>
               </CardHeader>
