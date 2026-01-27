@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { User, LogOut, BarChart3, Crown } from 'lucide-react';
+import { User, LogOut, BarChart3, Crown, LayoutDashboard } from 'lucide-react';
 
 interface NavigationProps {
   currentPage: string;
@@ -146,14 +146,6 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                     </p>
                   </div>
                   <DropdownMenuSeparator style={{ backgroundColor: '#51355A', opacity: 0.2 }} />
-                  <DropdownMenuItem 
-                    onClick={() => onNavigate('membership')}
-                    className="rounded-lg cursor-pointer hover:bg-white"
-                    style={{ color: '#51355A' }}
-                  >
-                    <Crown className="mr-2 h-4 w-4" />
-                    Membership
-                  </DropdownMenuItem>
                   {/* Mobile Navigation Links (visible on mobile only) */}
                   <div className="md:hidden">
                     <DropdownMenuItem 
@@ -161,7 +153,7 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                       className="rounded-lg cursor-pointer hover:bg-white"
                       style={{ color: '#51355A' }}
                     >
-                      <BarChart3 className="mr-2 h-4 w-4" />
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
                       Dashboard
                     </DropdownMenuItem>
                     <DropdownMenuItem 
@@ -179,6 +171,14 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                     >
                       <User className="mr-2 h-4 w-4" />
                       Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => onNavigate('membership')}
+                      className="rounded-lg cursor-pointer hover:bg-white"
+                      style={{ color: '#51355A' }}
+                    >
+                      <Crown className="mr-2 h-4 w-4" />
+                      Membership
                     </DropdownMenuItem>
                     <DropdownMenuSeparator style={{ backgroundColor: '#51355A', opacity: 0.2 }} />
                   </div>
