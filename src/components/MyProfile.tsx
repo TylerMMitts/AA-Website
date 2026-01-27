@@ -559,9 +559,6 @@ export function MyProfile() {
         <Card>
           <CardHeader>
             <CardTitle>Resume Upload</CardTitle>
-            <CardDescription>
-              Upload your resume - we'll store it securely in AWS S3
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Existing Resume Display */}
