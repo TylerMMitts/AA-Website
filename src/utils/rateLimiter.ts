@@ -155,7 +155,7 @@ export const RATE_LIMITS = {
     message: 'Job search limit reached. Please try again later.',
   },
   JOB_SEARCH_PRO: {
-    maxRequests: 5,
+    maxRequests: 10,
     windowMs: 30 * 60 * 1000, // 30 minutes
     message: 'Job search limit reached. Please try again later.',
   },
