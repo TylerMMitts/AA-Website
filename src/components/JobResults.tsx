@@ -48,6 +48,8 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
   const initialJobsRef = useRef<Job[]>([]);
   const lastLoadTimeRef = useRef(0);
   const currentUserRef = useRef<string | null>(null);
+  const lastSaveTimeRef = useRef(0);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Clear jobs when user changes (switching accounts)
   useEffect(() => {
@@ -124,18 +126,25 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
       // Don't save if jobs array is the same as initially loaded (prevents saving on mount)
       if (JSON.stringify(jobs) === JSON.stringify(initialJobsRef.current)) return;
 
-      console.log('Saving applications - jobs changed from initial load');
+      // Minimum 2 seconds between actual saves to prevent API spam
+      const now = Date.now();
+      const timeSinceLastSave = now - lastSaveTimeRef.current;
+      const MIN_SAVE_INTERVAL = 2000; // 2 seconds
 
-      // Rate limit check
-      const rateLimitKey = `${user.uid}:save-applications`;
-      const rateLimitResult = rateLimiter.check(rateLimitKey, RATE_LIMITS.SAVE_APPLICATIONS);
-      
-      if (!rateLimitResult.allowed) {
-        toast.error(rateLimitResult.message || 'Please wait before saving again');
+      if (timeSinceLastSave < MIN_SAVE_INTERVAL && lastSaveTimeRef.current > 0) {
+        // Too soon since last save - schedule for later
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+        saveTimeoutRef.current = setTimeout(saveApplications, MIN_SAVE_INTERVAL - timeSinceLastSave);
         return;
       }
 
+      console.log('Saving applications - jobs changed from initial load');
+
       setIsSaving(true);
+      lastSaveTimeRef.current = Date.now();
+      
       try {
         const applicationsJson = JSON.stringify(jobs);
         
@@ -161,14 +170,20 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
         initialJobsRef.current = jobs;
       } catch (error) {
         console.error('Error saving applications:', error);
+        // Silent failure for background saves - don't show error toast
       } finally {
         setIsSaving(false);
       }
     };
 
-    // Debounce saves
+    // Debounce saves - wait 1 second after last edit
     const timeoutId = setTimeout(saveApplications, 1000);
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, [jobs, user?.uid, isLoading]);
 
     // Redesigned stats as an array for easier mapping

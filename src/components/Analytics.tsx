@@ -17,9 +17,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { saveUserData } from '../functions/save_user_data';
 import { getUserData } from '../functions/get_user_data';
 import { UserCache } from '../utils/userCache';
-import { rateLimiter, RATE_LIMITS } from '../utils/rateLimiter';
 import { toast } from 'sonner';
 import { User } from 'firebase/auth';
+import { useRef } from 'react';
 
 
 interface Job {
@@ -47,6 +47,9 @@ interface AnalyticsProps {
 }
 
 export function Analytics({ jobs, setJobs, user }: AnalyticsProps) {
+  const lastSaveTimeRef = useRef(0);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingChangesRef = useRef<Map<string, string>>(new Map());
   
   // Generate chart data from actual job applications
   const generateChartData = () => {
@@ -127,53 +130,72 @@ export function Analytics({ jobs, setJobs, user }: AnalyticsProps) {
       return;
     }
 
-    // Rate limit check
-    const rateLimitKey = `${user.uid}:status-change`;
-    const rateLimitResult = rateLimiter.check(rateLimitKey, RATE_LIMITS.STATUS_CHANGE);
-    
-    if (!rateLimitResult.allowed) {
-      toast.error(rateLimitResult.message || 'Please wait before changing status again');
-      return;
-    }
-
     // Update local state immediately for responsiveness
     const updatedJobs = jobs.map(job => 
       job.id === jobId ? { ...job, status: newStatus as Job['status'] } : job
     );
     setJobs(updatedJobs);
 
-    try {
-      // Save to database
-      const applicationsJson = JSON.stringify(updatedJobs);
-      
-      // Fetch current user data to get existing profile_data
-      const currentData = await getUserData(user.uid);
-      let existingProfile = {};
-      
-      if (currentData.success && currentData.data?.profile_data) {
-        existingProfile = typeof currentData.data.profile_data === 'string' 
-          ? JSON.parse(currentData.data.profile_data)
-          : currentData.data.profile_data;
-      }
-      
-      // Save with existing profile to satisfy NOT NULL constraint
-      await saveUserData({
-        user_id: user.uid,
-        profile: existingProfile,
-        applications_txt: applicationsJson
-      });
-      
-      // Update cache
-      UserCache.set(user.uid, 'applications', updatedJobs);
-      
-      toast.success('Job status updated successfully!');
-    } catch (error) {
-      console.error('Error saving status change:', error);
-      toast.error('Failed to save status change');
-      
-      // Revert the local state change on error
-      setJobs(jobs);
+    // Track this change
+    pendingChangesRef.current.set(jobId, newStatus);
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
+
+    // Function to perform the actual save
+    const performSave = async () => {
+      const now = Date.now();
+      const timeSinceLastSave = now - lastSaveTimeRef.current;
+      const MIN_SAVE_INTERVAL = 2000; // 2 seconds
+
+      if (timeSinceLastSave < MIN_SAVE_INTERVAL && lastSaveTimeRef.current > 0) {
+        // Too soon since last save - schedule for later
+        saveTimeoutRef.current = setTimeout(performSave, MIN_SAVE_INTERVAL - timeSinceLastSave);
+        return;
+      }
+
+      lastSaveTimeRef.current = Date.now();
+      const changesCount = pendingChangesRef.current.size;
+      pendingChangesRef.current.clear();
+
+      try {
+        // Save to database
+        const applicationsJson = JSON.stringify(updatedJobs);
+        
+        // Fetch current user data to get existing profile_data
+        const currentData = await getUserData(user.uid);
+        let existingProfile = {};
+        
+        if (currentData.success && currentData.data?.profile_data) {
+          existingProfile = typeof currentData.data.profile_data === 'string' 
+            ? JSON.parse(currentData.data.profile_data)
+            : currentData.data.profile_data;
+        }
+        
+        // Save with existing profile to satisfy NOT NULL constraint
+        await saveUserData({
+          user_id: user.uid,
+          profile: existingProfile,
+          applications_txt: applicationsJson
+        });
+        
+        // Update cache
+        UserCache.set(user.uid, 'applications', updatedJobs);
+        
+        // Only show toast if not too many rapid changes
+        if (changesCount <= 2) {
+          toast.success('Status updated!');
+        }
+      } catch (error) {
+        console.error('Error saving status change:', error);
+        // Silent failure for background saves
+      }
+    };
+
+    // Debounce: wait 800ms after last change before saving
+    saveTimeoutRef.current = setTimeout(performSave, 800);
   };
 
   const getStatusColor = (status: string) => {
