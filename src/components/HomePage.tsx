@@ -12,6 +12,24 @@ interface HomePageProps {
 export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
   return (
     <div className="w-full" style={{ backgroundColor: '#FFF8F0' }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .mobile-hide-text {
+            display: none !important;
+          }
+          .mobile-logo-spacing {
+            margin-top: 6rem !important;
+            margin-bottom: 8rem !important;
+            max-width: 90vw !important;
+            height: auto !important;
+            width: auto !important;
+          }
+          .mobile-hide-badge {
+            display: none !important;
+          }          .mobile-center-text {
+            text-align: center !important;
+          }        }
+      `}</style>
       {/* Hero Section with Organic Wavy Background */}
       <section className="relative overflow-hidden py-24 md:py-32" style={{ backgroundColor: '#FFF8F0' }}>
         {/* Organic Wavy Background Shapes */}
@@ -39,8 +57,8 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
 
         {/* Logo and Hero Title at the very top */}
         <div className="w-full flex flex-col items-center z-20 relative pt-8 space-y-6" style={{ marginBottom: '14rem', marginTop: '-4rem' }}>
-          <img src={logo} alt="ApplyApply Logo" style={{ height: '8em', width: 'auto' }} />
-          <h2 className="text-3xl md:text-4xl font-medium mt-0 mb-4" style={{ color: '#2A0C4E', fontStyle: 'italic', fontFamily: 'Inter', fontSize: '2.5em', marginTop: '-2rem' }}>
+          <img src={logo} alt="ApplyApply Logo" className="mobile-logo-spacing" style={{ height: '8em', width: 'auto' }} />
+          <h2 className="mobile-hide-text text-3xl md:text-4xl font-medium mt-0 mb-4" style={{ color: '#2A0C4E', fontStyle: 'italic', fontFamily: 'Inter', fontSize: '2.5em', marginTop: '-2rem' }}>
             Make applying for jobs{' '}
             <span style={{ fontFamily: 'Great Vibes, cursive', fontStyle: 'italic', color: '#9E2B25', fontSize: '2.5em' }}>
               effortless
@@ -55,17 +73,17 @@ export function HomePage({ onGetStarted, onNavigate }: HomePageProps) {
               <style>
                 {`@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');`}
               </style>
-              <div className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 border-2" 
+              <div className="mobile-hide-badge inline-flex items-center gap-2 rounded-full px-5 py-2.5 border-2" 
                    style={{ backgroundColor: '#FFF8F0', borderColor: '#9E2B25', color: '#9E2B25' }}>
                 <Sparkles className="h-4 w-4" />
                 <span className="font-semibold text-sm">Automate your job search today</span>
               </div>
               
-              <h1 className="text-5xl md:text-6xl lg:text-7xl leading-tight" style={{ color: '#2A0C4E' }}>
+              <h1 className="mobile-center-text text-5xl md:text-6xl lg:text-7xl leading-tight" style={{ color: '#2A0C4E' }}>
                 Land your dream job <span style={{ color: '#9E2B25' }}>faster.</span>
               </h1>
               
-              <p className="text-xl md:text-2xl leading-relaxed" style={{ color: '#51355A' }}>
+              <p className="mobile-center-text text-xl md:text-2xl leading-relaxed" style={{ color: '#51355A' }}>
                 ApplyApply is the all-in-one job application platform that automates your job search, enhancing your chances of landing interviews with custom AI resumes and cover letters.
               </p>
               

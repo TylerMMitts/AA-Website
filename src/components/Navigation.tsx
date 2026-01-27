@@ -46,7 +46,15 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-lg border-b" 
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .mobile-hide-nav {
+            display: none !important;
+          }
+        }
+      `}</style>
+      <header className="sticky top-0 z-50 w-full backdrop-blur-lg border-b" 
             style={{ 
               backgroundColor: 'rgba(255, 248, 240, 0.9)', 
               borderBottomColor: '#51355A',
@@ -57,7 +65,7 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
           {/* Centered Navigation Links for logged in users */}
           {isLoggedIn && (
             <nav
-              className="absolute left-1/2 top-0 transform -translate-x-1/2 h-20 flex items-center z-40"
+              className="mobile-hide-nav absolute left-1/2 top-0 transform -translate-x-1/2 h-20 flex items-center z-40"
               aria-label="Main navigation"
             >
               <div
@@ -219,5 +227,6 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
         </div>
       </div>
     </header>
+    </>
   );
 }
