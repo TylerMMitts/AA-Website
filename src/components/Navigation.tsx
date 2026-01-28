@@ -62,6 +62,17 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
             }}>
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
+          {/* Logo/Brand - always visible */}
+          <div className="flex items-center">
+            <button
+              onClick={() => onNavigate(isLoggedIn ? 'dashboard' : 'home')}
+              className="text-2xl font-bold hover:opacity-80 transition-opacity"
+              style={{ color: '#2A0C4E' }}
+            >
+              ApplyApply
+            </button>
+          </div>
+
           {/* Centered Navigation Links for logged in users */}
           {isLoggedIn && (
             <nav
@@ -207,9 +218,9 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                 <div className="flex items-center gap-3">
                   <Button
                     onClick={onLogin}
-                    variant="ghost"
-                    className="font-semibold hover:bg-white/50 rounded-xl"
-                    style={{ color: '#51355A' }}
+                    variant="outline"
+                    className="font-semibold rounded-xl border-2"
+                    style={{ color: '#51355A', backgroundColor: 'white', borderColor: '#9E2B25' }}
                   >
                     Log In
                   </Button>
