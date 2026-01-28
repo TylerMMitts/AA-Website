@@ -26,6 +26,7 @@ export interface GenerateDocumentsResponse {
   success: boolean;
   content?: string;
   format?: 'pdf' | 'markdown';
+  filename?: string;
   error?: string;
 }
 

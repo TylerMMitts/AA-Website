@@ -348,9 +348,9 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
         }
 
         // Download the document
-        const filename = documentType === 'resume'
-          ? `Resume_${job.company}_${job.title}`.replace(/[^a-zA-Z0-9_]/g, '_')
-          : `CoverLetter_${job.company}_${job.title}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        const filename = result.filename || (documentType === 'resume'
+          ? `${job.company}_Resume`
+          : `${job.company}_Cover_Letter`);
 
         downloadDocument(result.content, filename, result.format || 'pdf');
 
