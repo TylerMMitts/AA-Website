@@ -29,9 +29,10 @@ interface JobSearchAutomationProps {
   onBack: () => void;
   isPro?: boolean;
   user?: any; // Add user for rate limiting
+  onNavigate?: (page: string) => void;
 }
 
-export default function JobSearchAutomation({ onAddJob, onBack, isPro, user }: JobSearchAutomationProps) {
+export default function JobSearchAutomation({ onAddJob, onBack, isPro, user, onNavigate }: JobSearchAutomationProps) {
   const [searchParams, setSearchParams] = useState<JobListingInput>({
     country: 'us',
     title: '',
@@ -250,9 +251,13 @@ export default function JobSearchAutomation({ onAddJob, onBack, isPro, user }: J
               )}
             </Button>
             {!isPro && (
-              <div className="text-center text-sm mt-2" style={{ color: '#9E2B25' }}>
+              <button
+                onClick={() => onNavigate?.('membership')}
+                className="text-center text-sm mt-2 hover:underline cursor-pointer w-full"
+                style={{ color: '#9E2B25' }}
+              >
                 Job automation is a Pro feature. Upgrade to Pro to unlock!
-              </div>
+              </button>
             )}
           </CardContent>
         </Card>
