@@ -31,13 +31,14 @@ export default function Membership({ onNavigate, membership: membershipProp }: M
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, membershipProp]);
 
-  const loadMembershipStatus = async () => {
+  const refreshMembershipStatus = async () => {
     if (!user?.uid) return;
     
     setIsLoading(true);
     try {
       const response = await getMembership(user.uid);
       if (response.success && response.data) {
+        console.log('Refreshed membership data:', response.data);
         setMembership(response.data);
       } else {
         toast.error('Failed to load membership status');
@@ -215,9 +216,18 @@ export default function Membership({ onNavigate, membership: membershipProp }: M
                       className="p-4 rounded-lg text-sm"
                       style={{ backgroundColor: '#FFF8F0', border: '1px solid #51355A', color: '#51355A' }}
                     >
-                      Your subscription will end on{' '}
-                      {membership.currentPeriodEnd && formatRenewalDate(membership.currentPeriodEnd)}.
-                      You'll continue to have Pro access until then.
+                      {membership.currentPeriodEnd ? (
+                        <>
+                          Your subscription will end on{' '}
+                          <strong>{formatRenewalDate(membership.currentPeriodEnd)}</strong>.
+                          You'll continue to have Pro access until then.
+                        </>
+                      ) : (
+                        <>
+                          {console.log('No currentPeriodEnd found. Membership data:', membership)}
+                          Your subscription has been cancelled and will end at the end of the current billing period.
+                        </>
+                      )}
                     </div>
                   )}
                 </CardContent>

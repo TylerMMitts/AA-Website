@@ -33,6 +33,9 @@ export function CancelSubscription({ onNavigate, membership, onRefreshMembership
       await cancelSubscription(user.uid, membership.subscriptionId, membership.customerId);
       toast.success('Subscription will be canceled at the end of the billing period');
       
+      // Small delay to ensure database is updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Refresh membership status
       if (onRefreshMembership) {
         await onRefreshMembership();
