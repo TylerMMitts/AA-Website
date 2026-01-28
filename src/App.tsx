@@ -186,8 +186,8 @@ export default function App() {
           dateAdded: new Date().toISOString()
         };
         
-        // Add new job
-        const updatedJobs = [...currentJobs, jobWithTimestamp];
+        // Add new job to the top of the list
+        const updatedJobs = [jobWithTimestamp, ...currentJobs];
         
         // Save to database - must include profile_data to avoid constraint violation
         await saveUserData({
