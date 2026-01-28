@@ -32,7 +32,6 @@ export async function getUserData(user_id: string): Promise<GetUserDataResponse>
 
   // Fetches user data from the backend
   try {
-    console.log('Making GET request...');
     const response = await fetch(fullUrl, {
       method: 'GET',
       headers: {
@@ -40,25 +39,19 @@ export async function getUserData(user_id: string): Promise<GetUserDataResponse>
       },
     });
 
-    // Detailed debug logs
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-    
     const responseText = await response.text();
-    console.log('Raw response body:', responseText);
 
     if (!response.ok) {
-      console.error('Error response:', responseText);
+      console.error('Error fetching user data - status:', response.status);
       
       if (response.status === 404) {
         throw new Error('User not found');
       }
       
-      throw new Error(`HTTP error! status: ${response.status}, body: ${responseText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = JSON.parse(responseText);
-    console.log('Success! Parsed user data:', data);
 
     return {
       success: true,

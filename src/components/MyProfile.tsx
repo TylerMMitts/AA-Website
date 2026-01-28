@@ -163,7 +163,6 @@ export function MyProfile() {
 
     try {
       setIsLoading(true);
-      console.log('Loading profile for user:', currentUser.uid);
       
       // Check cache first
       const cachedProfile = UserCache.get<any>(currentUser.uid, 'profile');
@@ -182,7 +181,6 @@ export function MyProfile() {
           setExistingResumeUrl(cachedProfile.resumeUrl);
         }
         setIsLoading(false);
-        console.log('Profile loaded from cache:', mergedData);
         toast.success('Profile loaded from cache!');
         return;
       }
