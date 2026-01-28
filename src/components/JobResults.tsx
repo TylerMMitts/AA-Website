@@ -44,6 +44,7 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [generatingDocFor, setGeneratingDocFor] = useState<{ jobId: string; type: 'resume' | 'cover_letter' } | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const hasLoadedRef = useRef(false);
   const initialJobsRef = useRef<Job[]>([]);
   const lastLoadTimeRef = useRef(0);
@@ -296,6 +297,18 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
       if (diffMonths < 12) return `${diffMonths} month${diffMonths !== 1 ? 's' : ''} ago`;
       
       return added.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const toggleDescription = (jobId: string) => {
+      setExpandedDescriptions(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(jobId)) {
+          newSet.delete(jobId);
+        } else {
+          newSet.add(jobId);
+        }
+        return newSet;
+      });
     };
 
     const handleGenerateDocument = async (job: Job, documentType: 'resume' | 'cover_letter') => {
@@ -695,9 +708,21 @@ export function JobResults({ onJobApplied, jobs, setJobs, user, onNavigate, memb
                   </CardHeader>
                   {editingJobId !== job.id && job.description && (
                     <CardContent>
-                      <p className="line-clamp-2" style={{ color: '#51355A' }}>
+                      <p 
+                        className={expandedDescriptions.has(job.id) ? '' : 'line-clamp-2'} 
+                        style={{ color: '#51355A' }}
+                      >
                         {job.description}
                       </p>
+                      {job.description.length > 150 && (
+                        <button
+                          onClick={() => toggleDescription(job.id)}
+                          className="text-sm font-medium mt-2 hover:underline"
+                          style={{ color: '#9E2B25' }}
+                        >
+                          {expandedDescriptions.has(job.id) ? 'Show Less' : 'Read More'}
+                        </button>
+                      )}
                     </CardContent>
                   )}
                 </Card>
