@@ -65,7 +65,7 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
           {/* Logo/Brand - always visible */}
           <div className="flex items-center">
             <button
-              onClick={() => onNavigate(isLoggedIn ? 'dashboard' : 'home')}
+              onClick={() => onNavigate('home')}
               className="text-2xl font-bold hover:opacity-80 transition-opacity"
               style={{ color: '#2A0C4E' }}
             >
@@ -106,17 +106,6 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                   Analytics
                 </button>
                 <button
-                  onClick={() => onNavigate('membership')}
-                  className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
-                    currentPage === 'membership'
-                      ? '!bg-[#51355A] !text-white !shadow-xl'
-                      : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
-                  }`}
-                  style={{ letterSpacing: 2 }}
-                >
-                  Membership
-                </button>
-                <button
                   onClick={() => onNavigate('profile')}
                   className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
                     currentPage === 'profile'
@@ -126,6 +115,17 @@ export function Navigation({ currentPage, onNavigate, isLoggedIn, onLogin, onSig
                   style={{ letterSpacing: 2 }}
                 >
                   Profile
+                </button>
+                <button
+                  onClick={() => onNavigate('membership')}
+                  className={`px-12 py-3 rounded-full text-2xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9E2B25] focus:ring-offset-2 tracking-wide ${
+                    currentPage === 'membership'
+                      ? '!bg-[#51355A] !text-white !shadow-xl'
+                      : 'bg-transparent text-white hover:bg-[#51355A] hover:text-[#F3E8FF]'
+                  }`}
+                  style={{ letterSpacing: 2 }}
+                >
+                  Membership
                 </button>
               </div>
             </nav>
